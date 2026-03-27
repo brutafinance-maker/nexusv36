@@ -1,0 +1,48 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+@media print {
+  nav, footer, .no-print, button, .chat-sidebar, .navbar {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .anamnese-container {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .evolution-card {
+    box-shadow: none !important;
+    border: 1px solid #eee !important;
+  }
+}
