@@ -13,26 +13,23 @@ import AuthView from './components/AuthView';
 import AdminView from './components/AdminView';
 import LibraryView from './components/LibraryView';
 import AnamneseView from './components/anamnese/AnamneseView';
-import ConteudoDigitalPage from './components/conteudo-digital/ConteudoDigitalPage';
-import FlashcardsPage from './components/flashcards/FlashcardsPage';
 import ChatSidebar from './components/ChatSidebar';
-import MandatoryUpdate from './components/MandatoryUpdate';
 import CycleSelection from './components/CycleSelection';
 import UserProfileMenu from './components/UserProfileMenu';
 import { auth, db } from './lib/firebase';
+import { useTheme } from './lib/hooks/useTheme';
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, updateDoc, onSnapshot, collection, query, increment } from "firebase/firestore";
 import { UserStats, ActivityItem } from './types';
+import { calculateUserPoints, syncUserPoints } from './lib/rankingUtils';
 
 const App: React.FC = () => {
-  const [view, setView] = useState<'inicio' | 'ct' | 'pbl' | 'premium' | 'morfo' | 'hp' | 'foco' | 'manuais' | 'admin' | 'conteudo-digital' | 'flashcards' | 'anamnese' | 'biblioteca'>('inicio');
+  const [view, setView] = useState<'inicio' | 'ct' | 'pbl' | 'premium' | 'morfo' | 'hp' | 'foco' | 'manuais' | 'admin' | 'anamnese' | 'biblioteca'>('inicio');
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [needsSetup, setNeedsSetup] = useState(false);
-  const [needsProfileUpdate, setNeedsProfileUpdate] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   
   const [userStats, setUserStats] = useState<UserStats>({
     displayName: '',
@@ -67,10 +64,6 @@ const App: React.FC = () => {
   }, [view]);
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-  }, [theme]);
-
-  useEffect(() => {
     let unsubStats: (() => void) | undefined;
     let unsubRanking: (() => void) | undefined;
 
@@ -88,17 +81,14 @@ const App: React.FC = () => {
                return;
             }
             if (!data.setupComplete) setNeedsSetup(true);
-            else if (!data.medCourse) setNeedsProfileUpdate(true);
             else {
                setNeedsSetup(false);
-               setNeedsProfileUpdate(false);
             }
 
             unsubStats = onSnapshot(userDocRef, (docSnap) => {
               if (docSnap.exists()) {
                 const statsData = docSnap.data();
                 setUserStats({ uid: currentUser.uid, ...statsData } as any);
-                if (statsData.themePreference) setTheme(statsData.themePreference);
               }
             });
 
@@ -112,7 +102,6 @@ const App: React.FC = () => {
         } else {
           setUser(null);
           setNeedsSetup(false);
-          setNeedsProfileUpdate(false);
         }
       } catch (err) { console.error(err); }
       finally { setLoading(false); }
@@ -145,6 +134,31 @@ const App: React.FC = () => {
     });
   };
 
+  const handleAnswerQuestion = async (isCorrect: boolean) => {
+    if (!user) return;
+    const userRef = doc(db, "users", user.uid);
+    const updates: any = {
+      totalAnswered: increment(1)
+    };
+    if (isCorrect) {
+      updates.totalCorrect = increment(1);
+    } else {
+      updates.totalErrors = increment(1);
+    }
+    await updateDoc(userRef, updates);
+    
+    // Sync points
+    const currentStatsSnapshot = await getDoc(userRef);
+    if (currentStatsSnapshot.exists()) {
+      await syncUserPoints(user.uid, currentStatsSnapshot.data() as UserStats);
+    }
+  };
+
+  const syncPoints = async () => {
+    if (!user) return;
+    await syncUserPoints(user.uid, userStats);
+  };
+
   const addActivity = async (item: Omit<ActivityItem, 'timestamp'>) => {
     if (!user) return;
     const userRef = doc(db, "users", user.uid);
@@ -155,11 +169,10 @@ const App: React.FC = () => {
   if (loading) return null;
   if (!user) return <AuthView />;
   if (needsSetup) return <CycleSelection onComplete={() => setNeedsSetup(false)} />;
-  if (needsProfileUpdate) return <MandatoryUpdate userId={user.uid} onComplete={() => setNeedsProfileUpdate(false)} />;
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-nexus-bg text-neutral-900 dark:text-nexus-text-main flex flex-col relative transition-colors duration-300">
-      {!isAnamneseModelActive && (
+    <div className="min-h-screen bg-med-bg dark:bg-nexus-bg text-med-text dark:text-nexus-text-main flex flex-col relative transition-colors duration-300">
+      {user && !isAnamneseModelActive && view !== 'premium' && (
         <Header 
           currentView={view} 
           onNavigate={setView} 
@@ -179,20 +192,18 @@ const App: React.FC = () => {
 
       <ChatSidebar isOpen={chatOpen} onClose={() => setChatOpen(false)} userStats={userStats} />
       
-      <main className={`max-w-[1400px] mx-auto pb-20 px-4 md:px-8 w-full flex-grow ${isAnamneseModelActive ? 'pt-0' : ''}`}>
+      <main className={`${view === 'premium' ? 'w-full flex-grow' : 'max-w-[1400px] mx-auto pb-20 px-4 md:px-8 w-full flex-grow'} ${isAnamneseModelActive ? 'pt-0' : ''}`}>
         {view === 'inicio' ? <StatsDashboard stats={userStats} allUsers={allUsersRanking} onNavigate={setView} /> : (
-          <div className={isAnamneseModelActive ? 'pt-0' : 'pt-8'}>
-            {view === 'pbl' && <PBLView userStats={userStats} onAddActivity={addActivity} />}
-            {view === 'ct' && <TrainingCenterView />}
+          <div className={isAnamneseModelActive || view === 'premium' ? 'pt-0' : 'pt-8'}>
+            {view === 'pbl' && <PBLView userStats={userStats} onAddActivity={addActivity} onSyncPoints={syncPoints} onAwardPoints={syncPoints} />}
+            {view === 'ct' && <TrainingCenterView onAnswer={handleAnswerQuestion} />}
             {view === 'morfo' && <MorfoView userStats={userStats} onAddActivity={addActivity} />}
             {view === 'hp' && <HPView isPremium={userStats.isPremium} onAddActivity={addActivity} userStats={userStats} />}
-            {view === 'premium' && <PremiumView userStats={userStats} onAddActivity={addActivity} />}
+            {view === 'premium' && <PremiumView userStats={userStats} onAddActivity={addActivity} onAwardPoints={syncPoints} onNavigate={setView} />}
             {view === 'manuais' && <ManualsView userStats={userStats} onAddActivity={addActivity} />}
             {view === 'biblioteca' && <LibraryView />}
             {view === 'admin' && <AdminView userStats={userStats} />}
             {view === 'anamnese' && <AnamneseView onModelSelect={setIsAnamneseModelActive} />}
-            {view === 'conteudo-digital' && <ConteudoDigitalPage />}
-            {view === 'flashcards' && <FlashcardsPage />}
             {view === 'foco' && (
               <StudyView 
                 userStats={userStats} 

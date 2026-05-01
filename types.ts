@@ -66,6 +66,7 @@ export interface UserStats {
   dailyStudyTime: number; 
   totalStudyTime: number; 
   themePreference?: 'dark' | 'light';
+  completedPblModules?: string[];
   weakestTheme?: {
     theme: string;
     errorCount: number;

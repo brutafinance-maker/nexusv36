@@ -13,21 +13,31 @@
           extend: {
             colors: {
               nexus: {
-                bg: '#111315',       // Fundo grafite escuro e neutro (não azulado)
-                surface: '#181A1F',  // Superfície secundária sutilmente mais clara
-                card: '#1D2026',     // Fundo dos cards elegante
-                hover: '#252830',    // Cor de hover suave
-                border: '#2E323A',   // Bordas finas e sutis
-                blue: '#38BDF8',     // Azul clínico para ações
-                green: '#4ADE80',    // Verde saúde para progresso
-                purple: '#A78BFA',   // Roxo para PBL
-                orange: '#FBBF24',   // Laranja para foco/alertas
+                bg: '#0B1120',       // Background dark
+                surface: '#111827',  // Surface/Card dark
+                card: '#111827',     // Card dark
+                hover: '#1F2937',    // Hover dark
+                border: '#1F2937',   // Border dark
+                blue: '#3B82F6',     // Primary blue dark
+                green: '#22C55E',    // Success
+                purple: '#A78BFA',   
+                orange: '#F59E0B',   // Warning
+                red: '#EF4444',      // Error
                 text: {
-                  title: '#F9FAFB',  // Textos primários quase brancos
-                  main: '#D1D5DB',   // Texto de leitura (cinza claro)
-                  sec: '#9CA3AF',    // Texto secundário (cinza médio)
-                  label: '#6B7280'   // Labels e textos pequenos
+                  title: '#E5E7EB',
+                  main: '#E5E7EB',
+                  sec: '#9CA3AF',
+                  label: '#6B7280'
                 }
+              },
+              // Tema Light explícito
+              med: {
+                bg: '#F8FAFC',
+                card: '#FFFFFF',
+                primary: '#2563EB',
+                text: '#0F172A',
+                sec: '#64748B',
+                border: '#E2E8F0'
               }
             }
           }

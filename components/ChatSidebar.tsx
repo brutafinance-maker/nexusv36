@@ -14,13 +14,13 @@ import {
   getDocs,
   where,
   Timestamp
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+} from "firebase/firestore";
 import { 
   ref, 
   uploadBytes, 
   getDownloadURL, 
   deleteObject 
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+} from "firebase/storage";
 import { ChatMessage, UserStats, Group } from '../types';
 
 interface ChatSidebarProps {

@@ -1,6 +1,10 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { UserStats, ActivityItem } from '../types';
+import { motion, AnimatePresence } from 'motion/react';
+import { db } from '../lib/firebase';
+import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { CheckCircle2, Circle, TrendingUp, Flag, Map as MapIcon, ChevronRight, Trophy, BookOpen, AlertCircle, Play } from 'lucide-react';
 
 interface SummaryProblem {
   numero: string;
@@ -106,13 +110,14 @@ const MODULE_SUMMARIES_GALLERY: Record<number, ModuleSummaryItem[]> = {
 interface PBLViewProps {
   userDisplayName?: string;
   userStats: UserStats;
-  onNavigateToPremium: () => void;
-  onIncrementUsage: (contentId: string) => void;
+  onNavigateToPremium?: () => void;
+  onIncrementUsage?: (contentId: string) => void;
   onAddActivity: (item: any) => void;
   onAwardPoints?: (id: string, value?: number) => void;
+  onSyncPoints?: () => void;
 }
 
-const PBLView: React.FC<PBLViewProps> = ({ userDisplayName, userStats, onNavigateToPremium, onIncrementUsage, onAddActivity, onAwardPoints }) => {
+const PBLView: React.FC<PBLViewProps> = ({ userDisplayName, userStats, onNavigateToPremium, onIncrementUsage, onAddActivity, onAwardPoints, onSyncPoints }) => {
   const [selectedModule, setSelectedModule] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<'info' | 'conteudos' | 'resumos'>('info');
   const [selectedProblemNum, setSelectedProblemNum] = useState<string | null>(null);
@@ -128,51 +133,114 @@ const PBLView: React.FC<PBLViewProps> = ({ userDisplayName, userStats, onNavigat
     return (userStats.openedContentIds?.length || 0) >= 10;
   };
 
-  const pblHistory = useMemo(() => 
-    (userStats.recentActivity || []).filter(a => a.type === 'apostila').slice(0, 3),
-  [userStats.recentActivity]);
+  const handleToggleModule = async (e: React.MouseEvent, moduleId: number) => {
+    e.stopPropagation();
+    if (!userStats.uid) return;
 
-  const handleResumeActivity = (act: any) => {
-    if (act.metadata) {
-      setSelectedModule(act.metadata.moduleId);
-      if (act.metadata.isModuleSummary) {
-          setActiveTab('resumos');
-          setActiveModuleSummary({ id: act.id, title: act.title, url: act.metadata.url });
+    const moduleKey = `ase_${moduleId}`;
+    const userDocRef = doc(db, 'users', userStats.uid);
+    const isCompleted = userStats.completedPblModules?.includes(moduleKey);
+
+    try {
+      if (isCompleted) {
+        await updateDoc(userDocRef, {
+          completedPblModules: arrayRemove(moduleKey)
+        });
       } else {
-          setSelectedProblemNum(act.metadata.problemNum);
-          setActiveTab('conteudos');
+        await updateDoc(userDocRef, {
+          completedPblModules: arrayUnion(moduleKey)
+        });
       }
+      // Re-sync points based on new completedPblModules
+      setTimeout(() => {
+        onSyncPoints?.();
+      }, 500); 
+    } catch (err) {
+      console.error("Erro ao atualizar progresso:", err);
     }
   };
 
+  const allModules = useMemo(() => {
+    const basicoTitles = [
+      'Introdução ao Estudo da Medicina',
+      'Proliferação e Crescimento Celular',
+      'Funções Biológicas 1',
+      'Funções Biológicas 2',
+      'Metabolismo e Nutrição',
+      'Mecanismo de Agressão e Defesa',
+      'Concepção e Gestação',
+      'Nascimento e Desenvolvimento',
+      'Vida Adulta e Envelhecimento',
+      'Percepção e Emoções',
+      'Febre e Infecção',
+      'Fadiga e Anemias'
+    ];
+    
+    const clinicoTitles = [
+      'Disúria e Edema',
+      'Perda de Sangue',
+      'Mente e Comportamento',
+      'Cardiologia e Pneumologia',
+      'Gastroenterologia',
+      'Endocrinologia',
+      'Infectologia Clínica',
+      'Ginecologia e Obstetrícia',
+      'Pediatria Clínica',
+      'Cirurgia e Urgência',
+      'Medicina da Família',
+      'Ética e Propedêutica Avançada'
+    ];
+
+    const meds = [];
+    for (let i = 1; i <= 8; i++) {
+      const titles = i <= 4 ? basicoTitles : clinicoTitles;
+      const startIdx = (i <= 4 ? (i - 1) * 3 : (i - 5) * 3);
+      
+      meds.push({
+        name: `MED ${i}`,
+        modules: [
+          { id: (i - 1) * 3 + 1, title: `ASE ${(i - 1) * 3 + 1} — ${titles[startIdx]}` },
+          { id: (i - 1) * 3 + 2, title: `ASE ${(i - 1) * 3 + 2} — ${titles[startIdx + 1]}` },
+          { id: (i - 1) * 3 + 3, title: `ASE ${(i - 1) * 3 + 3} — ${titles[startIdx + 2]}` }
+        ]
+      });
+    }
+    return meds;
+  }, []);
+
+  const totalModulesCount = 24;
+  const completedCount = userStats.completedPblModules?.length || 0;
+  const progressPercent = Math.round((completedCount / totalModulesCount) * 100);
+
+  const getPhrase = (progress: number) => {
+    if (progress === 0) return "Sua jornada começa agora! Já revisou algo hoje?";
+    if (progress < 15) return "O básico está ganhando forma. Continue focado!";
+    if (progress < 30) return "Quase completando o Ciclo Básico inicial. Orgulho!";
+    if (progress < 50) return "O Ciclo Clínico está no horizonte. Falta pouco!";
+    if (progress < 65) return "Você já dominou o Básico! O hospital te espera.";
+    if (progress < 80) return "Clínica a todo vapor! Você está se tornando um mestre.";
+    if (progress < 95) return "Falta muito pouco! O Internato já está logo ali.";
+    if (progress === 100) return "CRM na mão? Trilha 100% concluída! Sucesso absoluto.";
+    return "Mandando muito bem! A medicina é para os fortes.";
+  };
+
+  // Auto-scroll para o primeiro não concluído
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [selectedProblemNum, selectedModule, activeTab, activeModuleSummary]);
+    if (!selectedModule) {
+      setTimeout(() => {
+        const firstUncompletedId = allModules
+          .flatMap(med => med.modules)
+          .find(mod => !userStats.completedPblModules?.includes(`ase_${mod.id}`))?.id;
 
-  useEffect(() => {
-    setViewMode('text');
-  }, [selectedProblemNum]);
-
-  const modulesBasico = [
-    { id: 1, title: 'ASE 1 — Introdução ao Estudo da Medicina' },
-    { id: 2, title: 'ASE 2 — Proliferação, Alteração do Crescimento e Diferenciação Celular' },
-    { id: 3, title: 'ASE 3 — Funções Biológicas 1' },
-    { id: 4, title: 'ASE 4 — Funções Biológicas 2' },
-    { id: 5, title: 'ASE 5 — Metabolismo e Nutrição' },
-    { id: 6, title: 'ASE 6 — Mecanismo de Agressão e Defesa' },
-    { id: 7, title: 'ASE 7 — Concepção, Formação do Ser Humano e Gestação' },
-    { id: 8, title: 'ASE 8 — Nascimento, Crescimento e Desenvolvimento da Criança e do Adolescente' },
-    { id: 9, title: 'ASE 9 — Vida Adulta e Processo de Envelhecimento' },
-    { id: 10, title: 'ASE 10 — Percepção, Consciência e Emoções' },
-    { id: 11, title: 'ASE 11 — Febre, Inflamação e Infecção' },
-    { id: 12, title: 'ASE 12 — Fadiga, Perda de Peso e Anemias' },
-  ];
-
-  const modulesClinico = [
-    { id: 13, title: 'ASE 13 — Disúria, Edema e Proteinúria' },
-    { id: 14, title: 'ASE 14 — Perda de Sangue' },
-    { id: 15, title: 'ASE 15 — Mente e Comportamento' },
-  ];
+        if (firstUncompletedId) {
+          const element = document.getElementById(`module-card-${firstUncompletedId}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      }, 500);
+    }
+  }, [selectedModule]);
 
   const handleSelectProblem = (num: string) => {
     const summaries = GLOBAL_SUMMARIES[selectedModule!] || [];
@@ -236,7 +304,8 @@ const PBLView: React.FC<PBLViewProps> = ({ userDisplayName, userStats, onNavigat
 
     try {
       const { PDFDocument, rgb, degrees, StandardFonts } = (window as any).PDFLib;
-      const currentModuleObj = [...modulesBasico, ...modulesClinico].find(m => m.id === selectedModule);
+      const flattenedModules = allModules.flatMap(m => m.modules);
+      const currentModuleObj = flattenedModules.find(m => m.id === selectedModule);
       const moduleName = currentModuleObj?.title || "NexusBQ";
       const userName = userDisplayName || "Estudante NexusBQ";
       
@@ -292,8 +361,8 @@ const PBLView: React.FC<PBLViewProps> = ({ userDisplayName, userStats, onNavigat
   };
 
   if (selectedModule) {
-    const allModules = [...modulesBasico, ...modulesClinico];
-    const currentModule = allModules.find(m => m.id === selectedModule);
+    const flattenedModules = allModules.flatMap(m => m.modules);
+    const currentModule = flattenedModules.find(m => m.id === selectedModule);
     const summaries = GLOBAL_SUMMARIES[selectedModule] || [];
     const moduleSummaryGallery = MODULE_SUMMARIES_GALLERY[selectedModule] || [];
 
@@ -548,68 +617,168 @@ const PBLView: React.FC<PBLViewProps> = ({ userDisplayName, userStats, onNavigat
   }
 
   return (
-    <div className="max-w-[1800px] mx-auto px-0 md:px-4 pb-32">
-      {/* Bloco Continuar Estudando - PBL */}
-      {pblHistory.length > 0 && (
-        <section className="max-w-[1800px] mx-auto px-4 md:px-8 mb-12 animate-in slide-in-from-top-4 duration-500">
-          <h3 className="text-[10px] font-black text-neutral-500 dark:text-nexus-text-sec uppercase tracking-[0.4em] mb-4 flex items-center gap-4">
-            Continuar Estudando – PBL <div className="h-px flex-grow bg-neutral-200 dark:bg-nexus-border"></div>
-          </h3>
-          <div className="flex gap-4 overflow-x-auto no-scrollbar pb-6 -mx-2 px-2">
-            {pblHistory.map((act) => (
-              <div 
-                key={act.id} 
-                onClick={() => handleResumeActivity(act)}
-                className="bg-white dark:bg-nexus-card border border-neutral-200 dark:border-nexus-border p-4 rounded-2xl cursor-pointer hover:border-nexus-purple transition-all flex items-center gap-4 group min-w-[280px] shadow-sm"
-              >
-                <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-nexus-surface flex items-center justify-center text-sm group-hover:bg-nexus-purple/10 group-hover:text-nexus-purple transition-all shrink-0 text-nexus-purple border border-neutral-200 dark:border-nexus-border">
-                  📄
+    <div className="max-w-[1400px] mx-auto px-4 md:px-8 pb-32">
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Lado Esquerdo: Trilha */}
+        <div className="flex-grow">
+          <header className="mb-8 pt-8">
+            <motion.h2 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="text-3xl md:text-5xl font-black text-med-text dark:text-nexus-text-title tracking-tight italic"
+            >
+              Trilha <span className="text-med-primary dark:text-nexus-blue">PBL</span>
+            </motion.h2>
+            <p className="text-med-sec dark:text-nexus-text-sec text-sm mt-1 font-medium">
+              O mapa da sua formação médica em módulos ASE.
+            </p>
+          </header>
+
+          <div className="relative space-y-12">
+            <div className="absolute left-[31px] md:left-[32px] top-0 bottom-0 w-0.5 bg-gradient-to-b from-med-primary/20 via-med-primary/5 to-transparent -translate-x-1/2"></div>
+
+            {allModules.map((med, medIdx) => (
+              <section key={medIdx} className="relative z-10">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-8 h-8 bg-med-text dark:bg-nexus-text-title text-med-card dark:text-nexus-bg rounded-lg flex items-center justify-center font-black text-sm shadow-md">
+                    {medIdx + 1}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-med-text dark:text-nexus-text-title tracking-tight">{med.name}</h3>
+                    <p className="text-[8px] font-black text-med-sec uppercase tracking-[0.2em]">
+                      {medIdx < 4 ? 'Ciclo Básico' : 'Ciclo Clínico'}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <h5 className="text-xs font-bold text-neutral-900 dark:text-nexus-text-main truncate">{act.title}</h5>
-                  <span className="text-[9px] text-neutral-500 dark:text-nexus-text-sec uppercase tracking-widest font-black">{act.subtitle}</span>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                  {med.modules.map((module) => {
+                    const isCompleted = userStats.completedPblModules?.includes(`ase_${module.id}`);
+                    return (
+                      <motion.div 
+                        key={module.id}
+                        id={`module-card-${module.id}`}
+                        whileHover={{ y: -2 }}
+                        onClick={() => handleModuleClick(module.id)}
+                        className={`relative p-4 rounded-2xl border transition-all cursor-pointer group flex flex-col justify-between h-40 shadow-sm overflow-hidden ${
+                          isCompleted 
+                            ? 'bg-med-primary/5 dark:bg-sky-500/5 border-med-primary/20 dark:border-nexus-blue/20' 
+                            : 'bg-white dark:bg-nexus-surface border-med-border dark:border-nexus-border hover:border-med-primary/50 dark:hover:border-nexus-blue/50'
+                        }`}
+                      >
+                        <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform">
+                          <MapIcon className="w-20 h-20" />
+                        </div>
+
+                        <div className="flex justify-between items-start relative z-10">
+                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-black text-[9px] ${
+                            isCompleted ? 'bg-med-primary text-white' : 'bg-neutral-50 dark:bg-nexus-card text-med-sec'
+                          }`}>
+                            {module.id}
+                          </div>
+                          <button 
+                            onClick={(e) => handleToggleModule(e, module.id)}
+                            className={`p-1 rounded-lg transition-all ${
+                              isCompleted ? 'text-med-primary dark:text-nexus-blue' : 'text-neutral-300 dark:text-nexus-border hover:text-med-primary'
+                            }`}
+                          >
+                            {isCompleted ? <CheckCircle2 className="w-5 h-5 fill-current" /> : <Circle className="w-5 h-5" />}
+                          </button>
+                        </div>
+
+                        <div className="relative z-10">
+                          <h4 className={`text-sm font-black tracking-tight leading-snug mb-2 line-clamp-2 ${
+                            isCompleted ? 'text-med-primary dark:text-nexus-blue' : 'text-med-text dark:text-nexus-text-title'
+                          }`}>
+                            {module.title}
+                          </h4>
+                          
+                          <div className="flex items-center justify-between">
+                            <span className={`text-[8px] font-bold uppercase tracking-widest ${
+                              isCompleted ? 'text-med-primary/60 dark:text-nexus-blue/60' : 'text-med-sec'
+                            }`}>
+                              {isCompleted ? 'Concluído' : 'Acessar →'}
+                            </span>
+                            {isCompleted && (
+                              <div className="flex items-center gap-1 text-[8px] font-black text-med-primary dark:text-nexus-blue uppercase tracking-widest">
+                                +50 PTS <Trophy className="w-2.5 h-2.5" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
-              </div>
+              </section>
             ))}
-          </div>
-        </section>
-      )}
 
-      <header className="mb-10 md:mb-16 px-4">
-        <h2 className="text-4xl md:text-6xl font-black text-neutral-900 dark:text-nexus-text-title mb-4 md:mb-6 tracking-tighter italic">Grade PBL</h2>
-        <p className="text-neutral-500 dark:text-nexus-text-main text-lg md:text-2xl font-light max-w-4xl leading-relaxed">Estrutura curricular integral com conteúdos fragmentados, resumos detalhados e apostilas integradas.</p>
-      </header>
-
-      <div className="space-y-12 md:space-y-16 px-4">
-        <section>
-          <h3 className="text-[10px] font-black text-nexus-purple uppercase tracking-[0.4em] mb-6 md:mb-8 flex items-center gap-4">
-             Ciclo Básico <div className="h-px flex-grow bg-nexus-purple/20"></div>
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6">
-            {modulesBasico.map((m) => (
-              <div key={m.id} onClick={() => handleModuleClick(m.id)} className={`bg-white dark:bg-nexus-card border border-neutral-200 dark:border-nexus-border border-l-4 border-l-nexus-purple p-6 md:p-8 rounded-2xl md:rounded-3xl cursor-pointer hover:bg-neutral-50 dark:hover:bg-nexus-hover hover:-translate-y-1 transition-all flex flex-col justify-between h-44 md:h-52 group shadow-sm`}>
-                <span className="text-[9px] md:text-[10px] font-black text-nexus-purple uppercase tracking-widest">ASE {m.id}</span>
-                <h4 className="text-base md:text-lg font-bold text-neutral-900 dark:text-nexus-text-main leading-tight group-hover:text-nexus-purple transition-colors">{m.title}</h4>
-                <span className="text-[9px] md:text-[10px] font-bold uppercase text-neutral-400 dark:text-nexus-text-sec group-hover:text-nexus-purple transition-colors">Ver Conteúdo →</span>
+            <section className="relative z-10 flex flex-col items-center py-8">
+              <div className="w-12 h-12 bg-med-primary dark:bg-nexus-blue rounded-full flex items-center justify-center text-white shadow-xl shadow-med-primary/40 mb-3">
+                <Flag className="w-6 h-6" />
               </div>
-            ))}
+              <h3 className="text-xl font-black text-med-text dark:text-nexus-text-title tracking-tight">Internato</h3>
+            </section>
           </div>
-        </section>
+        </div>
 
-        <section>
-          <h3 className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em] mb-6 md:mb-8 flex items-center gap-4">
-             Ciclo Clínico <div className="h-px flex-grow bg-indigo-500/20"></div>
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6">
-            {modulesClinico.map((m) => (
-              <div key={m.id} onClick={() => handleModuleClick(m.id)} className={`bg-white dark:bg-nexus-card border border-neutral-200 dark:border-nexus-border border-l-4 border-l-indigo-500 p-6 md:p-8 rounded-2xl md:rounded-3xl cursor-pointer hover:bg-neutral-50 dark:hover:bg-nexus-hover hover:-translate-y-1 transition-all flex flex-col justify-between h-44 md:h-52 group shadow-sm`}>
-                <span className="text-[9px] md:text-[10px] font-black text-indigo-500 uppercase tracking-widest">ASE {m.id}</span>
-                <h4 className="text-base md:text-lg font-bold text-neutral-900 dark:text-nexus-text-main leading-tight group-hover:text-indigo-500 transition-colors">{m.title}</h4>
-                <span className="text-[9px] md:text-[10px] font-bold uppercase text-neutral-400 dark:text-nexus-text-sec group-hover:text-indigo-500 transition-colors">Acessar Casos →</span>
+        {/* Floating Sidebar */}
+        <div className="lg:w-[280px] shrink-0">
+          <div className="lg:sticky lg:top-24 space-y-4">
+            {/* Progresso Card Slim */}
+            <div className="bg-white dark:bg-nexus-surface border border-med-border dark:border-nexus-border p-5 rounded-[1.5rem] shadow-xl shadow-black/5">
+              <div className="flex items-center justify-between w-full mb-2">
+                <span className="text-[9px] font-black text-med-sec uppercase tracking-widest">Sua Jornada</span>
+                <span className="text-xs font-black text-med-primary dark:text-nexus-blue">{progressPercent}%</span>
               </div>
-            ))}
+              <div className="w-full h-2 bg-neutral-100 dark:bg-nexus-bg rounded-full overflow-hidden mb-3">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progressPercent}%` }}
+                  className="h-full bg-med-primary dark:bg-nexus-blue"
+                />
+              </div>
+              <div className="flex justify-between items-center text-[8px] font-bold text-med-sec uppercase tracking-wider">
+                <span>{completedCount} módulos</span>
+                <span>Faltam {totalModulesCount - completedCount}</span>
+              </div>
+            </div>
+
+            {/* Frase Motivacional Floating */}
+            <motion.div 
+              key={progressPercent}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-med-text dark:bg-nexus-card p-5 rounded-[1.5rem] relative overflow-hidden shadow-xl"
+            >
+              <div className="absolute -right-2 -bottom-2 opacity-10 text-white/20">
+                <Trophy className="w-12 h-12" />
+              </div>
+              <p className="text-white dark:text-nexus-text-title font-bold italic text-xs relative z-10 leading-relaxed">
+                "{getPhrase(progressPercent)}"
+              </p>
+            </motion.div>
+
+            {/* Quick Status */}
+            <div className="bg-white dark:bg-nexus-surface border border-neutral-100 dark:border-nexus-border p-4 rounded-[1.5rem] hidden lg:block">
+              <h4 className="text-[8px] font-black text-neutral-400 uppercase tracking-widest mb-3">Status da Grade</h4>
+              <div className="grid grid-cols-6 gap-1.5">
+                {Array.from({ length: 24 }).map((_, i) => (
+                  <div 
+                    key={i} 
+                    className={`aspect-square rounded-md flex items-center justify-center text-[7px] font-black transition-colors ${
+                      userStats.completedPblModules?.includes(`ase_${i + 1}`)
+                        ? 'bg-med-primary text-white'
+                        : 'bg-neutral-50 dark:bg-nexus-bg text-neutral-300 dark:text-slate-600'
+                    }`}
+                  >
+                    {i + 1}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        </section>
+        </div>
       </div>
     </div>
   );

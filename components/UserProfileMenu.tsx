@@ -2,8 +2,8 @@
 import React, { useState, useRef } from 'react';
 import { UserStats } from '../types';
 import { auth, db } from '../lib/firebase';
-import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { signOut } from "firebase/auth";
+import { doc, updateDoc } from "firebase/firestore";
 
 interface UserProfileMenuProps {
   isOpen: boolean;

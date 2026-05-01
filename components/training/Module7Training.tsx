@@ -601,9 +601,10 @@ const ALL_M7_QUESTIONS = [
 interface Module7TrainingProps {
   onBack: () => void;
   hideHeader?: boolean;
+  onAnswer?: (isCorrect: boolean) => void;
 }
 
-const Module7Training: React.FC<Module7TrainingProps> = ({ onBack, hideHeader = false }) => {
+const Module7Training: React.FC<Module7TrainingProps> = ({ onBack, hideHeader = false, onAnswer }) => {
   const [isStudyStarted, setIsStudyStarted] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [quantity, setQuantity] = useState<number>(10);
@@ -704,8 +705,15 @@ const Module7Training: React.FC<Module7TrainingProps> = ({ onBack, hideHeader = 
 
   const handleAnswer = (questionId: string, index: number) => {
     if (showResults[questionId]) return;
+    const question = generatedQuestions.find(q => q.id === questionId);
+    const isCorrect = question?.gabarito === index;
+    
     setSelectedAnswers(prev => ({ ...prev, [questionId]: index }));
     setShowResults(prev => ({ ...prev, [questionId]: true }));
+    
+    if (onAnswer) {
+      onAnswer(isCorrect);
+    }
   };
 
   const scrollToQuestion = (id: string) => {

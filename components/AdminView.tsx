@@ -17,6 +17,7 @@ import {
 } from "firebase/firestore";
 import { Group, UserStats, AdminLog, ChatMessage } from '../types';
 import AdminAcademiaGen from './AdminAcademiaGen';
+import { recalculateAllRankings } from '../lib/rankingUtils';
 
 interface AdminViewProps {
   userStats: UserStats;
@@ -231,8 +232,8 @@ const AdminView: React.FC<AdminViewProps> = ({ userStats }) => {
                     <div className="space-y-4">
                        <p className="text-xs text-neutral-400 font-bold uppercase">Distribuição de Planos</p>
                        <div className="h-4 w-full bg-neutral-800 rounded-full overflow-hidden flex">
-                          <div className="h-full bg-blue-600" style={{ width: `${(users.filter(u => u.isPremium).length / users.length) * 100}%` }}></div>
-                          <div className="h-full bg-neutral-700" style={{ width: `${(users.filter(u => !u.isPremium).length / users.length) * 100}%` }}></div>
+                          <div className="h-full bg-blue-600" style={{ width: `${(users.filter(u => u.isPremium).length / (users.length || 1)) * 100}%` }}></div>
+                          <div className="h-full bg-neutral-700" style={{ width: `${((users.length - users.filter(u => u.isPremium).length) / (users.length || 1)) * 100}%` }}></div>
                        </div>
                        <div className="flex gap-6 text-[10px] font-bold uppercase tracking-widest">
                           <span className="flex items-center gap-2 text-blue-500"><div className="w-2 h-2 bg-blue-600 rounded-full"></div> Premium</span>
@@ -247,6 +248,29 @@ const AdminView: React.FC<AdminViewProps> = ({ userStats }) => {
                        <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_#10b981]"></div>
                     </div>
                  </div>
+              </div>
+
+              <div className="bg-neutral-900 border border-neutral-800 rounded-[2rem] p-8">
+                <h3 className="text-sm font-black text-white uppercase tracking-widest mb-4">Ações de Sistema</h3>
+                <button 
+                  onClick={async () => {
+                    if (confirm("Deseja ZERAR e RECALCULAR os pontos de RANKING de todos os usuários com base nas novas regras? (PBL, CT e Aulas)")) {
+                      try {
+                        await recalculateAllRankings();
+                        alert("Ranking recalculado com sucesso para todos os usuários!");
+                      } catch (err) {
+                        console.error(err);
+                        alert("Erro ao recalcular rankings.");
+                      }
+                    }
+                  }}
+                  className="bg-blue-600 hover:bg-blue-500 text-white font-black text-[10px] uppercase tracking-[0.2em] px-8 py-4 rounded-xl transition-all shadow-lg active:scale-[0.98]"
+                >
+                  Zerar e Recalcular Rankings
+                </button>
+                <p className="text-[10px] text-neutral-500 mt-3 font-medium uppercase tracking-wider">
+                  * Esta ação sincroniza os pontos de todos os usuários baseando-se nos módulos PBL concluídos, questões corretas no CT e videoaulas assistidas.
+                </p>
               </div>
             </div>
           )}

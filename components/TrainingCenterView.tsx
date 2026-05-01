@@ -2,7 +2,11 @@
 import React, { useState } from 'react';
 import Module7Training from './training/Module7Training';
 
-const TrainingCenterView: React.FC = () => {
+interface TrainingCenterViewProps {
+  onAnswer?: (isCorrect: boolean) => void;
+}
+
+const TrainingCenterView: React.FC<TrainingCenterViewProps> = ({ onAnswer }) => {
   const [activeModule, setActiveModule] = useState<string | null>(null);
 
   const modules = [
@@ -32,7 +36,7 @@ const TrainingCenterView: React.FC = () => {
   if (activeModule === 'm7') {
     return (
       <div className="animate-in fade-in duration-500">
-        <Module7Training onBack={() => setActiveModule(null)} hideHeader={false} />
+        <Module7Training onBack={() => setActiveModule(null)} hideHeader={false} onAnswer={onAnswer} />
       </div>
     );
   }

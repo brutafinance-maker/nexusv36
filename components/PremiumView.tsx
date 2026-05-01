@@ -2,12 +2,22 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { UserStats, VideoLesson, LastWatched, ActivityItem } from '../types';
 import { db, auth } from '../lib/firebase';
-import { doc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { doc, updateDoc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   CheckCircle2, 
   ChevronLeft,
   PlayCircle,
-  Clock
+  Clock,
+  Play,
+  Info,
+  ChevronRight,
+  TrendingUp,
+  Star,
+  Award,
+  Search,
+  Settings,
+  Bell
 } from 'lucide-react';
 import NexusVideoPlayer from './NexusVideoPlayer';
 
@@ -16,12 +26,17 @@ interface PremiumViewProps {
   onAddActivity: (item: any) => void;
   onAwardPoints?: (id: string, value?: number) => void;
   onIncrementUsage?: (contentId: string) => void;
+  onNavigate?: (view: any) => void;
 }
 
-const BRAND_COLOR = "#00BFA6"; 
-const VEST_COLOR = "#F43F5E";  
-const MEDCOF_COLOR = "#ef4444"; 
-const MEDCURSO_COLOR = "#38BDF8";
+const STREAMING_COLORS = {
+  bg: "#0B1120",
+  card: "#111827",
+  hover: "#1F2937",
+  primary: "#3B82F6",
+  text: "#E5E7EB",
+  secondary: "#9CA3AF"
+};
 
 const SPECIALTY_THEMES: Record<string, { img: string; icon: string; accent: string; desc: string; gradient: string }> = {
   "Pediatria 1": { 
@@ -172,7 +187,7 @@ const PREMIUM_PLATFORMS = [
   { id: 'devoltavest', title: 'De Volta ao Vest', category: 'foundation', description: 'Fundamentos do vestibular.', image: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&q=80&w=600' },
 ];
 
-const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onAwardPoints, onIncrementUsage }) => {
+const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onAwardPoints, onIncrementUsage, onNavigate }) => {
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
   const [activeVideo, setActiveVideo] = useState<VideoLesson | null>(null);
@@ -180,13 +195,6 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
   const videoRef = useRef<HTMLIFrameElement>(null);
   const watchedVideos = userStats.watchedLessons || [];
   
-  const accentColor = useMemo(() => {
-    if (selectedPlatform === 'devoltavest') return VEST_COLOR;
-    if (selectedPlatform === 'medcof') return MEDCOF_COLOR;
-    if (selectedPlatform === 'medcurso') return MEDCURSO_COLOR;
-    return BRAND_COLOR;
-  }, [selectedPlatform]);
-
   const premiumHistory = useMemo(() => 
     (userStats.recentActivity || [])
       .filter(a => a.type === 'aula' && a.metadata && a.metadata.platformId)
@@ -209,6 +217,7 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
     if (targetState === isCurrentlyWatched) return;
     try {
       await updateDoc(userRef, { watchedLessons: targetState ? arrayUnion(id) : arrayRemove(id) });
+      onAwardPoints?.(id);
     } catch (err) { console.error(err); }
   };
 
@@ -262,15 +271,15 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
           <div className="inline-flex items-center justify-center w-16 h-16 bg-sky-50 dark:bg-nexus-blue/10 rounded-full mb-6">
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-sky-600 dark:text-nexus-blue"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
           </div>
-          <h1 className="text-3xl md:text-5xl font-semibold text-neutral-900 dark:text-nexus-text-title mb-4 tracking-tight">Acervo Médico Exclusivo</h1>
+          <h1 className="text-3xl md:text-5xl font-semibold text-neutral-900 dark:text-nexus-text-title mb-4 tracking-tight">Área Premium Exclusiva</h1>
           <p className="text-neutral-500 dark:text-nexus-text-sec text-base md:text-lg font-medium leading-relaxed max-w-2xl mx-auto mb-8">Para acessar bibliotecas e videoaulas, assine o plano Premium.</p>
-          <button className="bg-sky-600 hover:bg-sky-500 text-white font-semibold px-10 py-4 rounded-xl text-sm transition-all shadow-sm active:scale-[0.98]">Ver Planos Premium</button>
+          <button className="bg-sky-600 hover:bg-sky-500 text-white font-semibold px-10 py-4 rounded-xl text-sm transition-all shadow-sm active:scale-[0.98]">Ver Planos Área Premium</button>
         </div>
       </div>
     );
   }
 
-  // VIEW DO PLAYER
+  // --- VIEW DO PLAYER ---
   if (activeVideo) {
     const isCompleted = watchedVideos.includes(activeVideo.id);
     const groupedLessons = filteredLessons.reduce((acc: any, lesson: any) => {
@@ -280,21 +289,37 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
       return acc;
     }, {});
 
+    const progressValue = Math.round((watchedVideos.length / filteredLessons.length) * 100);
+
     return (
-      <div className="fixed inset-0 z-[60] bg-nexus-bg flex flex-col lg:flex-row animate-in fade-in duration-300 overflow-hidden">
-        <div className="flex-grow flex flex-col overflow-y-auto no-scrollbar bg-black/20">
-          <header className="h-14 shrink-0 bg-nexus-surface border-b border-nexus-border flex items-center justify-between px-4 md:px-6">
-            <div className="flex items-center gap-3 md:gap-4">
-              <button onClick={() => { setActiveVideo(null); setSelectedCourse(null); }} className="w-8 h-8 md:w-10 md:h-10 rounded-full hover:bg-nexus-hover flex items-center justify-center text-nexus-text-sec transition-colors"><ChevronLeft size={20} /></button>
+      <div className="fixed inset-0 z-[60] bg-[#0B1120] flex flex-col lg:flex-row animate-in fade-in duration-300 overflow-hidden">
+        <div className="flex-grow flex flex-col overflow-y-auto no-scrollbar bg-black/40">
+          <header className="h-20 shrink-0 bg-[#0B1120]/80 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-8 z-50">
+            <div className="flex items-center gap-6">
+              <button 
+                onClick={() => { setActiveVideo(null); setSelectedCourse(null); }} 
+                className="flex items-center gap-2 text-[#9CA3AF] hover:text-white transition-all font-black text-[10px] uppercase tracking-widest group"
+              >
+                <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+                Voltar
+              </button>
+              <div className="h-8 w-px bg-white/10 hidden md:block" />
               <div className="min-w-0">
-                <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest leading-none mb-0.5 md:mb-1" style={{ color: accentColor }}>{selectedCourse}</p>
-                <h2 className="text-xs md:text-sm font-bold text-nexus-text-title truncate max-w-[200px] md:max-w-md">{activeVideo.title}</h2>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#3B82F6] leading-none mb-1.5">{selectedCourse}</p>
+                <h2 className="text-sm font-black text-white truncate max-w-[200px] md:max-w-2xl italic">{activeVideo.title}</h2>
               </div>
             </div>
+            
+            <button 
+              onClick={() => onNavigate?.('inicio')}
+              className="hidden md:flex items-center gap-2 bg-white/5 hover:bg-white/10 text-[#9CA3AF] hover:text-white px-5 py-2 rounded-full border border-white/10 transition-all font-black text-[9px] uppercase tracking-widest"
+            >
+              Sair do Hub
+            </button>
           </header>
 
-          <div className="flex-grow flex flex-col items-center justify-start py-4 md:py-8 px-0 md:px-6">
-            <div className="w-full max-w-[1280px] aspect-video bg-black shadow-2xl relative overflow-hidden rounded-none md:rounded-2xl border border-nexus-border/30">
+          <div className="flex-grow flex flex-col items-center justify-start py-8 px-6 md:px-12">
+            <div className="w-full max-w-[1400px] aspect-video bg-black shadow-[0_0_100px_rgba(0,0,0,0.8)] relative overflow-hidden rounded-[2rem] border border-white/10 ring-1 ring-white/5">
               <NexusVideoPlayer 
                 videoId={activeVideo.id} 
                 title={activeVideo.title} 
@@ -302,66 +327,138 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
               />
             </div>
 
-            <div className="w-full max-w-[1280px] mt-6 md:mt-10 px-4 md:px-0">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-nexus-border/50">
-                <div>
-                  <h1 className="text-xl md:text-3xl font-black text-nexus-text-title tracking-tight mb-2">{activeVideo.title}</h1>
-                  <div className="flex items-center gap-3 text-nexus-text-sec text-xs md:text-sm font-medium">
-                    <span>{(activeVideo as any).duration || '12 min'}</span>
-                    <span className="w-1 h-1 bg-nexus-text-sec/30 rounded-full"></span>
-                    <span>{selectedPlatform} Academy</span>
+            <div className="w-full max-w-[1400px] mt-12 pb-20">
+              <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-8 pb-10 border-b border-white/10">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <span className="px-3 py-1 bg-[#3B82F6]/10 text-[#3B82F6] text-[9px] font-black uppercase tracking-widest rounded-md border border-[#3B82F6]/20">4K ULTRA HD</span>
+                    <span className="text-[10px] font-black text-[#9CA3AF] uppercase tracking-widest flex items-center gap-2">
+                       <Clock size={12} /> {(activeVideo as any).duration || '12:00'}
+                    </span>
                   </div>
+                  <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter italic">{activeVideo.title}</h1>
                 </div>
-                <button 
-                  onClick={() => markAsWatched(activeVideo.id)} 
-                  className={`flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-widest transition-all ${isCompleted ? 'bg-nexus-green/10 text-nexus-green border border-nexus-green/20' : 'bg-white text-black hover:bg-neutral-200'}`}
-                >
-                  {isCompleted ? <CheckCircle2 size={16} /> : null}
-                  {isCompleted ? 'Aula Concluída' : 'Marcar como concluída'}
-                </button>
+                
+                <div className="flex items-center gap-4">
+                  <button 
+                    onClick={() => markAsWatched(activeVideo.id)} 
+                    className={`flex items-center justify-center gap-3 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-2xl hover:scale-105 active:scale-95 ${
+                      isCompleted 
+                        ? 'bg-green-500/10 text-green-500 border border-green-500/20' 
+                        : 'bg-white text-black hover:bg-neutral-200'
+                    }`}
+                  >
+                    {isCompleted ? <CheckCircle2 size={18} /> : <Play size={18} fill="currentColor" />}
+                    {isCompleted ? 'Concluído' : 'Marcar Concluída'}
+                  </button>
+                  <button className="w-14 h-14 rounded-2xl bg-white/5 hover:bg-white/10 text-white flex items-center justify-center border border-white/10 transition-all">
+                     <Star size={20} />
+                  </button>
+                </div>
               </div>
 
-              <div className="mt-8 space-y-6">
-                <h3 className="text-xs font-black text-nexus-text-title uppercase tracking-widest flex items-center gap-3">
-                  <Clock size={14} className="text-nexus-blue" />
-                  Descrição da Aula
-                </h3>
-                <p className="text-nexus-text-main text-sm md:text-base leading-relaxed font-light">
-                  Esta aula faz parte do módulo de {selectedCourse} da plataforma {selectedPlatform}. 
-                  Acompanhe o conteúdo e utilize os materiais complementares disponíveis na sua área do aluno.
-                </p>
+              <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-12">
+                <div className="lg:col-span-2 space-y-8">
+                  <div>
+                    <h3 className="text-xs font-black text-white uppercase tracking-[0.3em] flex items-center gap-3 mb-4">
+                      <div className="w-8 h-px bg-[#3B82F6]/30" /> Sobre esta Aula
+                    </h3>
+                    <p className="text-[#9CA3AF] text-lg leading-relaxed font-medium">
+                      Domine os conceitos fundamentais de {selectedCourse} com esta aula especializada. 
+                      Focamos nos pontos mais cobrados em provas de residência e na prática clínica diária, 
+                      utilizando uma metodologia integrada e visual.
+                    </p>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-3">
+                    {['#Hematologia', '#Residência', '#CicloClínico', '#Medcurso'].map(tag => (
+                      <span key={tag} className="px-4 py-2 bg-white/5 rounded-full text-[10px] font-black text-[#9CA3AF] border border-white/5 cursor-default hover:text-white transition-colors">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-[#111827] rounded-[2rem] p-8 border border-white/5 space-y-6">
+                   <h4 className="text-xs font-black text-white uppercase tracking-widest">Recursos Extras</h4>
+                   <div className="space-y-3">
+                      <button className="w-full p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-left flex items-center justify-between group transition-all">
+                         <span className="text-[11px] font-black text-[#E5E7EB] uppercase tracking-widest">Resumo em PDF</span>
+                         <div className="w-8 h-8 rounded-lg bg-[#3B82F6]/10 text-[#3B82F6] flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <Award size={16} />
+                         </div>
+                      </button>
+                      <button className="w-full p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-left flex items-center justify-between group transition-all">
+                         <span className="text-[11px] font-black text-[#E5E7EB] uppercase tracking-widest">Flashcards Anki</span>
+                         <div className="w-8 h-8 rounded-lg bg-[#3B82F6]/10 text-[#3B82F6] flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <Star size={16} />
+                         </div>
+                      </button>
+                   </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <aside className="w-full lg:w-[400px] xl:w-[450px] bg-nexus-surface border-l border-nexus-border flex flex-col h-[400px] lg:h-full">
-          <div className="p-4 md:p-6 border-b border-nexus-border sticky top-0 bg-nexus-surface z-10">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[10px] md:text-xs font-black text-nexus-text-title uppercase tracking-widest">Conteúdo do Curso</h3>
-              <span className="text-[10px] font-bold text-nexus-blue">{Math.round((watchedVideos.length / filteredLessons.length) * 100)}% concluído</span>
+        <aside className="w-full lg:w-[400px] xl:w-[480px] bg-[#0B1120] border-l border-white/5 flex flex-col h-[500px] lg:h-full z-20">
+          <div className="p-8 border-b border-white/5 bg-[#0B1120]">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-[10px] font-black text-[#9CA3AF] uppercase tracking-[0.3em]">Grade Curricular</h3>
+              <div className="flex items-center gap-2">
+                 <span className="text-2xl font-black text-white italic">{progressValue}%</span>
+                 <span className="text-[10px] font-black text-[#3B82F6] uppercase">Done</span>
+              </div>
             </div>
-            <div className="h-1.5 w-full bg-nexus-bg rounded-full overflow-hidden">
-              <div className="h-full bg-nexus-blue transition-all duration-500" style={{ width: `${(watchedVideos.length / filteredLessons.length) * 100}%` }}></div>
+            <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: `${progressValue}%` }}
+                className="h-full bg-[#3B82F6] shadow-[0_0_15px_rgba(59,130,246,0.5)]" 
+              />
             </div>
           </div>
-          <div className="flex-grow overflow-y-auto no-scrollbar p-2 space-y-1">
+
+          <div className="flex-grow overflow-y-auto no-scrollbar p-4 space-y-6">
             {Object.keys(groupedLessons).map(block => (
-              <div key={block} className="mb-4">
-                <p className="px-4 py-3 text-[9px] font-black text-neutral-500 uppercase tracking-widest leading-relaxed bg-nexus-bg/30 rounded-lg mb-1">{block}</p>
-                {groupedLessons[block].map((lesson: any) => (
+              <div key={block} className="space-y-2">
+                <p className="px-5 py-2 text-[9px] font-black text-[#3B82F6] uppercase tracking-[0.2em] bg-[#3B82F6]/10 rounded-lg w-fit mb-3">{block}</p>
+                {groupedLessons[block].map((lesson: any, idx: number) => (
                   <button 
                     key={lesson.id} 
                     onClick={() => handleLessonSelect(lesson)} 
-                    className={`w-full text-left p-3 md:p-4 rounded-xl flex items-start gap-3 transition-all ${activeVideo.id === lesson.id ? 'bg-nexus-blue/10 border border-nexus-blue/20' : 'hover:bg-nexus-hover/50'}`}
+                    className={`w-full text-left p-5 rounded-[1.5rem] flex items-center gap-5 transition-all group/item ${
+                      activeVideo.id === lesson.id 
+                        ? 'bg-[#111827] border border-[#3B82F6]/40 shadow-2xl' 
+                        : 'hover:bg-white/5 border border-transparent'
+                    }`}
                   >
-                    <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${watchedVideos.includes(lesson.id) ? 'bg-nexus-green' : 'bg-neutral-700'}`}></div>
-                    <div className="min-w-0">
-                      <p className={`text-xs font-bold leading-tight ${activeVideo.id === lesson.id ? 'text-nexus-blue' : 'text-nexus-text-main'}`}>{lesson.title}</p>
-                      <p className="text-[9px] text-neutral-500 font-bold mt-1.5 uppercase tracking-widest flex items-center gap-2">
-                        <PlayCircle size={10} />
-                        {lesson.duration || '12:00'}
+                    <div className="relative shrink-0">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-xs transition-colors shadow-lg ${
+                        watchedVideos.includes(lesson.id) 
+                          ? 'bg-green-500/10 text-green-500 border border-green-500/20' 
+                          : activeVideo.id === lesson.id 
+                            ? 'bg-[#3B82F6] text-white' 
+                            : 'bg-white/5 text-[#9CA3AF] border border-white/10'
+                      }`}>
+                        {watchedVideos.includes(lesson.id) ? <CheckCircle2 size={18} /> : (idx + 1).toString().padStart(2, '0')}
+                      </div>
+                    </div>
+
+                    <div className="min-w-0 flex-grow">
+                      <p className={`text-xs font-black leading-tight transition-colors ${
+                        activeVideo.id === lesson.id ? 'text-white' : 'text-[#9CA3AF] group-hover/item:text-white'
+                      }`}>
+                        {lesson.title}
                       </p>
+                      <div className="flex items-center gap-3 mt-2">
+                         <div className="flex items-center gap-1.5 text-[9px] font-bold text-[#9CA3AF]/60 uppercase tracking-widest">
+                            <PlayCircle size={12} /> {lesson.duration || '12:00'}
+                         </div>
+                         {activeVideo.id === lesson.id && (
+                           <span className="text-[8px] font-black text-[#3B82F6] animate-pulse uppercase tracking-widest">Reproduzindo</span>
+                         )}
+                      </div>
                     </div>
                   </button>
                 ))}
@@ -373,124 +470,334 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
     );
   }
 
-  // --- ÁREA DE ESPECIALIDADES ---
+  // --- VISTA PRINCIPAL (STREAMING STYLE) ---
   if (selectedPlatform) {
-    const platformGlow = selectedPlatform === 'medcurso' ? 'hover:border-[#38bdf8]/50 hover:shadow-[0_15px_30px_rgba(56,189,248,0.15)]' : 
-                         selectedPlatform === 'medcof' ? 'hover:border-[#ef4444]/50 hover:shadow-[0_15px_30px_rgba(239,68,68,0.15)]' :
-                         'hover:border-[#00BFA6]/50 hover:shadow-[0_15px_30px_rgba(0,191,166,0.15)]';
-
+    const platform = PREMIUM_PLATFORMS.find(p => p.id === selectedPlatform);
+    
     return (
-      <div className="max-w-[1400px] mx-auto animate-in fade-in duration-500 px-4">
-        <button onClick={() => setSelectedPlatform(null)} className="mb-8 flex items-center gap-2 text-neutral-500 hover:text-white transition-colors text-sm font-medium group">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform"><path d="m15 18-6-6 6-6"/></svg> Catálogo Premium
-        </button>
+      <div className="min-h-screen bg-[#0B1120] text-[#E5E7EB] animate-in fade-in duration-500 pb-32">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12 pt-12">
+          <button 
+            onClick={() => setSelectedPlatform(null)} 
+            className="mb-12 flex items-center gap-3 text-[#9CA3AF] hover:text-white transition-all text-sm font-black uppercase tracking-[0.2em] group bg-white/5 px-6 py-2.5 rounded-full border border-white/10 w-fit"
+          >
+            <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> 
+            Voltar ao Catálogo
+          </button>
 
-        <header className="mb-10">
-          <h2 className="text-3xl md:text-5xl font-black text-nexus-text-title tracking-tighter uppercase italic">{selectedPlatform}</h2>
-          <p className="text-neutral-500 mt-2 text-sm font-medium">Clique para retomar seus estudos de onde parou.</p>
-        </header>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {currentCourses.map((course) => {
-            const theme = SPECIALTY_THEMES[course] || SPECIALTY_THEMES["Clínica Médica"];
-            
-            const handleCourseClick = () => {
-              setSelectedCourse(course);
-              const lessons = getLessonsForCourse(course);
-              if (lessons.length > 0) {
-                const nextPendingLesson = lessons.find(l => !watchedVideos.includes(l.id));
-                const targetLesson = nextPendingLesson || lessons[lessons.length - 1];
-                handleLessonSelect(targetLesson, course);
-              }
-            };
-
-            return (
-              <div 
-                key={course}
-                onClick={handleCourseClick}
-                className={`group relative h-[240px] md:h-[280px] rounded-[22px] bg-[#1a1d23] border border-white/5 overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.02] ${platformGlow}`}
-              >
-                <div className="absolute inset-0 w-full h-full overflow-hidden">
-                  <img src={theme.img} alt={course} className="w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-1000" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0f1115] via-[#0f1115]/40 to-transparent"></div>
-                </div>
-
-                <div className="absolute inset-0 p-5 md:p-6 flex flex-col justify-between">
-                  <div className="flex justify-start">
-                    <span 
-                      className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-lg flex items-center gap-1.5 backdrop-blur-md border border-white/10"
-                      style={{ backgroundColor: `${theme.accent}B3`, color: '#fff' }}
-                    >
-                      {theme.icon} {course.split(' ')[0]}
-                    </span>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <h3 className="text-xl md:text-2xl font-black text-white tracking-tighter leading-tight drop-shadow-md">
-                      {course}
-                    </h3>
-                    
-                    <div className="w-full h-[3px] bg-white/10 rounded-full overflow-hidden">
-                      <div className={`h-full w-[12%] transition-all duration-1000 bg-gradient-to-r ${theme.gradient} rounded-full`}></div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between pt-1">
-                      <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">Retomar Estudo</span>
-                      <button className="bg-white text-[#0f1115] px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-neutral-200 transition-all shadow-lg">
-                        Assistir
-                      </button>
-                    </div>
-                  </div>
-                </div>
+          <header className="mb-16 relative">
+            <div className="absolute -left-12 -top-12 w-64 h-64 bg-[#3B82F6]/10 rounded-full blur-[100px] pointer-events-none" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 text-[#3B82F6] font-black text-[10px] uppercase tracking-[0.4em] mb-4">
+                 <div className="w-12 h-px bg-[#3B82F6]/30" /> {platform?.category || 'PLATAFORMA'}
               </div>
-            );
-          })}
+              <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase italic leading-none mb-4">
+                {platform?.title}
+              </h2>
+              <p className="text-[#9CA3AF] text-lg font-medium max-w-2xl leading-relaxed">
+                {platform?.description || 'Explore o conteúdo completo e acelere sua jornada de aprendizado.'}
+              </p>
+            </div>
+          </header>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {currentCourses.map((course, idx) => {
+              const theme = SPECIALTY_THEMES[course] || SPECIALTY_THEMES["Clínica Médica"];
+              return (
+                <motion.div 
+                  key={course}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  whileHover={{ y: -8 }}
+                  onClick={() => {
+                    setSelectedCourse(course);
+                    const lessons = getLessonsForCourse(course);
+                    if (lessons.length > 0) {
+                      handleLessonSelect(lessons[0], course);
+                    }
+                  }}
+                  className="group relative h-[320px] rounded-[2.5rem] bg-[#111827] border border-white/5 overflow-hidden cursor-pointer transition-all duration-500 shadow-2xl hover:shadow-[#3B82F6]/5"
+                >
+                  <div className="absolute inset-0 w-full h-full">
+                    <img 
+                      src={theme.img} 
+                      alt={course} 
+                      className="w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-1000 border-0" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120] via-[#0B1120]/60 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#0B1120]/40 to-transparent" />
+                  </div>
+
+                  <div className="absolute inset-0 p-10 flex flex-col justify-between">
+                    <div className="flex justify-between items-start">
+                      <div 
+                        className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-xl backdrop-blur-md border border-white/10"
+                        style={{ backgroundColor: `${theme.accent}20` }}
+                      >
+                        {theme.icon}
+                      </div>
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                         <div className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shadow-2xl">
+                            <Play size={16} fill="currentColor" className="ml-1" />
+                         </div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                         <span className="w-2 h-2 rounded-full" style={{ backgroundColor: theme.accent }} />
+                         <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Especialidade</span>
+                      </div>
+                      <h3 className="text-3xl font-black text-white tracking-tighter leading-tight group-hover:text-[#3B82F6] transition-colors">{course}</h3>
+                      <p className="text-[11px] text-[#9CA3AF] font-bold uppercase tracking-widest line-clamp-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                         {theme.desc}
+                      </p>
+                      
+                      <div className="pt-2">
+                        <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            whileInView={{ width: '100%' }}
+                            transition={{ duration: 1, delay: 0.5 }}
+                            className={`h-full bg-gradient-to-r ${theme.gradient} opacity-40 group-hover:opacity-100 transition-opacity`}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto animate-in fade-in duration-700 pb-20">
-      <header className="px-4 mb-10 md:mb-14">
-        <h2 className="text-3xl md:text-5xl font-semibold text-neutral-900 dark:text-nexus-text-title tracking-tighter mb-4 italic">Acervo Premium</h2>
-        <p className="text-neutral-500 dark:text-nexus-text-sec text-sm md:text-base font-medium max-w-2xl leading-relaxed">Sua biblioteca médica digital integrada.</p>
-      </header>
-      <div className="space-y-12 md:space-y-16">
+    <div className="min-h-screen bg-[#0B1120] text-[#E5E7EB] pb-32 overflow-x-hidden relative">
+      {/* Global Exit Button (Since navbar is hidden) */}
+      <div className="absolute top-8 left-8 z-50">
+        <button 
+          onClick={() => onNavigate?.('inicio')}
+          className="flex items-center gap-2 bg-black/40 hover:bg-black/60 backdrop-blur-md text-white px-4 py-2 rounded-full border border-white/10 transition-all font-bold text-xs uppercase tracking-widest group"
+        >
+          <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+          Voltar ao Nexus
+        </button>
+      </div>
+
+      {/* Hero Section */}
+      <section className="relative w-full h-[70vh] md:h-[85vh] overflow-hidden">
+        <div className="absolute inset-0">
+          <img 
+            src="https://images.unsplash.com/photo-1631815587646-b85a1bb027e1?auto=format&fit=crop&q=80&w=1600" 
+            alt="Hero Background" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120] via-[#0B1120]/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0B1120] via-transparent to-transparent" />
+        </div>
+
+        <div className="absolute bottom-20 left-0 p-8 md:p-16 max-w-4xl space-y-4 md:space-y-6 text-white">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2 text-[#3B82F6] font-black text-[10px] md:text-xs uppercase tracking-[0.3em] bg-[#3B82F6]/10 w-fit px-4 py-1.5 rounded-full border border-[#3B82F6]/20"
+          >
+            <TrendingUp size={14} /> Destaque da Semana
+          </motion.div>
+          
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl md:text-8xl font-black italic tracking-tighter"
+          >
+            Anemia de Doença Crônica
+          </motion.h1>
+          
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-[#9CA3AF] text-lg md:text-2xl font-medium max-w-3xl leading-relaxed"
+          >
+            Hematologia • Aprenda a diferenciar as anemias microcíticas com foco em ferritina e transferrina. O tema mais cobrado em provas.
+          </motion.p>
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex flex-wrap gap-4 pt-6"
+          >
+            <button 
+              onClick={() => {
+                setSelectedPlatform('medcurso');
+                setSelectedCourse('Hematologia');
+                handleLessonSelect(HEMATOLOGIA_LESSONS[1], 'Hematologia');
+              }}
+              className="bg-[#3B82F6] hover:bg-[#2563EB] text-white px-10 md:px-14 py-4 md:py-5 rounded-2xl font-black text-xs md:text-sm uppercase tracking-widest flex items-center gap-4 transition-all shadow-2xl hover:scale-105 active:scale-95"
+            >
+              <Play size={20} fill="currentColor" className="ml-1" /> Continuar Assistindo
+            </button>
+            <button className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-10 py-4 md:py-5 rounded-2xl font-black text-xs md:text-sm uppercase tracking-widest flex items-center gap-4 transition-all border border-white/10">
+              <Info size={20} /> Ver Detalhes
+            </button>
+          </motion.div>
+        </div>
+      </section>
+
+      <div className="px-8 mt-0 relative z-20 space-y-24 py-20">
+        {/* Continuar Assistindo */}
         {premiumHistory.length > 0 && (
-          <section className="px-4">
-            <h3 className="text-base md:text-lg font-semibold text-nexus-text-title mb-5">Continuar assistindo</h3>
-            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-6">
+          <section className="relative">
+            <h3 className="text-xl md:text-3xl font-black text-white mb-8 italic flex items-center gap-4">
+              Continuar Assistindo <ChevronRight className="text-[#3B82F6] w-6 h-6" />
+            </h3>
+            <div className="flex gap-6 overflow-x-auto no-scrollbar pb-10 -mx-8 px-8 scroll-smooth">
               {premiumHistory.map((act) => (
-                <div key={act.id} onClick={() => handleResumeActivity(act)} className="flex-none w-[220px] md:w-[280px] bg-nexus-card border border-nexus-border rounded-xl p-4 cursor-pointer hover:border-nexus-blue/50 transition-all shadow-sm">
-                  <div className="aspect-video w-full rounded-lg bg-nexus-surface mb-3 flex items-center justify-center text-nexus-blue/20">
-                     <PlayCircle size={32} />
+                <motion.div 
+                  key={act.id} 
+                  whileHover={{ scale: 1.05, zIndex: 30 }}
+                  onClick={() => handleResumeActivity(act)} 
+                  className="flex-none w-[280px] md:w-[400px] aspect-video bg-[#111827] rounded-[2rem] overflow-hidden cursor-pointer relative group shadow-2xl border border-white/5"
+                >
+                  <img 
+                    src={SPECIALTY_THEMES[act.metadata?.courseName]?.img || "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=400"} 
+                    className="w-full h-full object-cover opacity-50 group-hover:opacity-30 transition-opacity"
+                    alt={act.title}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
+                  
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="w-14 h-14 rounded-full bg-[#3B82F6] flex items-center justify-center shadow-2xl">
+                      <Play size={24} fill="currentColor" className="ml-1" />
+                    </div>
                   </div>
-                  <h5 className="text-xs md:text-sm font-semibold text-nexus-text-title truncate">{act.title}</h5>
-                  <span className="text-[10px] text-nexus-text-sec truncate block mt-0.5">{act.subtitle}</span>
-                </div>
+
+                  <div className="absolute bottom-0 left-0 w-full p-6">
+                    <h5 className="text-base font-black text-white truncate">{act.title}</h5>
+                    <span className="text-[11px] text-[#9CA3AF] font-bold uppercase tracking-widest mt-1.5 block">{act.subtitle}</span>
+                    <div className="mt-4 h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                       <div className="h-full bg-[#3B82F6] w-[70%]" />
+                    </div>
+                  </div>
+                </motion.div>
               ))}
             </div>
           </section>
         )}
-        <section className="px-4">
-          <h3 className="text-base md:text-lg font-semibold text-nexus-text-title mb-5">Plataformas Disponíveis</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {PREMIUM_PLATFORMS.map((platform) => (
-              <div key={platform.id} onClick={() => setSelectedPlatform(platform.id)} className="group relative aspect-video rounded-2xl bg-nexus-card border border-nexus-border overflow-hidden cursor-pointer transition-all hover:scale-[1.02]">
-                <div className={`w-full h-full ${platform.id === 'medcurso' ? 'bg-[#0a0a0a] p-8 flex items-center justify-center' : ''}`}>
+
+        {/* Mais de Hematologia */}
+        <section>
+          <h3 className="text-xl md:text-3xl font-black text-white mb-8 italic flex items-center gap-4">
+            Explosão de <span className="text-red-500">Hematologia</span> <div className="h-px flex-grow bg-red-500/20" />
+          </h3>
+          <div className="flex gap-6 overflow-x-auto no-scrollbar pb-10 -mx-8 px-8">
+            {HEMATOLOGIA_LESSONS.slice(0, 10).map((lesson) => (
+              <motion.div 
+                key={lesson.id} 
+                whileHover={{ scale: 1.05 }}
+                onClick={() => {
+                   setSelectedPlatform('medcurso');
+                   setSelectedCourse('Hematologia');
+                   handleLessonSelect(lesson, 'Hematologia');
+                }}
+                className="flex-none w-[240px] md:w-[320px] bg-[#111827] rounded-[2rem] overflow-hidden cursor-pointer relative group shadow-xl border border-white/5"
+              >
+                <div className="aspect-[16/10] bg-[#1F2937] relative">
+                   <img 
+                    src={`https://img.youtube.com/vi/${lesson.id}/mqdefault.jpg`}
+                    className="w-full h-full object-cover opacity-80"
+                    referrerPolicy="no-referrer"
+                    alt={lesson.title}
+                   />
+                   <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
+                   <div className="absolute top-4 right-4 px-3 py-1 rounded-lg bg-black/60 text-[10px] font-black text-white backdrop-blur-md">
+                      {lesson.duration}
+                   </div>
+                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <PlayCircle className="text-white w-12 h-12" />
+                   </div>
+                </div>
+                <div className="p-6">
+                  <h5 className="text-sm font-black text-[#E5E7EB] line-clamp-1 group-hover:text-[#3B82F6] transition-colors">{lesson.title}</h5>
+                  <div className="flex items-center gap-4 mt-3">
+                     <span className="text-[10px] font-black text-[#9CA3AF] uppercase tracking-widest">AULA HD</span>
+                     <span className="text-[10px] font-black text-red-500/80 uppercase">RESIDRE</span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* Recomendado para Você */}
+        <section>
+          <h3 className="text-xl md:text-3xl font-black text-white mb-8 italic flex items-center gap-4">
+            Recomendado para Você <Star className="text-yellow-500 w-6 h-6 fill-current" />
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {EMBRIOLOGIA_LESSONS.slice(0, 4).map((lesson) => (
+              <motion.div 
+                key={lesson.id}
+                whileHover={{ y: -10 }}
+                onClick={() => {
+                  setSelectedPlatform('devoltavest');
+                  setSelectedCourse('Embriologia');
+                  handleLessonSelect(lesson, 'Embriologia');
+                }}
+                className="bg-[#111827] rounded-[2.5rem] p-1 border-2 border-transparent hover:border-[#3B82F6]/30 overflow-hidden cursor-pointer shadow-2xl transition-all"
+              >
+                <div className="p-8">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-12 h-12 rounded-2xl bg-[#3B82F6]/10 flex items-center justify-center text-[#3B82F6]">
+                       <Award size={24} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black text-[#3B82F6] uppercase tracking-[0.2em]">Sugerido</p>
+                      <h4 className="text-base font-black text-white truncate">{lesson.title}</h4>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between mt-10">
+                    <div className="flex items-center gap-2.5 text-xs font-bold text-[#9CA3AF]">
+                       <Clock size={14} /> {lesson.duration}
+                    </div>
+                    <button className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:scale-110 transition-transform">
+                       <Play size={16} fill="currentColor" className="ml-1" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* Plataformas (Catalog Browsing) */}
+        <section className="pb-32">
+          <h3 className="text-xl md:text-3xl font-black text-white mb-10 italic">Explorar Plataformas</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+             {PREMIUM_PLATFORMS.map((platform) => (
+                <motion.div 
+                  key={platform.id} 
+                  whileHover={{ scale: 1.05 }}
+                  onClick={() => setSelectedPlatform(platform.id)} 
+                  className="group relative aspect-video rounded-[2.5rem] bg-[#111827] border border-white/5 overflow-hidden cursor-pointer transition-all shadow-2xl"
+                >
                   <img 
                     src={platform.image} 
                     alt={platform.title} 
-                    className={`w-full h-full transition-opacity ${platform.id === 'medcurso' ? 'object-contain opacity-90 group-hover:opacity-100' : 'object-cover opacity-60 group-hover:opacity-80'}`} 
+                    className="w-full h-full object-cover opacity-40 group-hover:opacity-70 transition-opacity" 
                   />
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent p-6 flex flex-col justify-end pointer-events-none">
-                  <h4 className="text-xl font-bold text-white tracking-tight">{platform.title}</h4>
-                  <p className="text-xs text-neutral-400 mt-1 line-clamp-1">{platform.description}</p>
-                </div>
-              </div>
-            ))}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent p-8 flex flex-col justify-end">
+                    <h4 className="text-2xl font-black text-white tracking-tight italic">{platform.title}</h4>
+                    <p className="text-[11px] text-[#9CA3AF] mt-1.5 font-bold uppercase tracking-widest">{platform.category}</p>
+                  </div>
+                </motion.div>
+             ))}
           </div>
         </section>
       </div>

@@ -11,7 +11,7 @@ import {
   getDocs, 
   Timestamp,
   serverTimestamp 
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+} from "firebase/firestore";
 
 export interface ChecklistItem {
   id: string;
