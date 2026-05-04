@@ -1,0 +1,46 @@
+{
+  "entities": {
+    "UserModuleContent": {
+      "title": "Conteúdo Digital do PBL",
+      "description": "Armazena as anotações, marcações e fontes de um usuário para um módulo específico.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "moduleId": { "type": "string" },
+        "blocks": {
+          "type": "array",
+          "description": "Lista de blocos de texto adicionados pelo usuário",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "text": { "type": "string" },
+              "source": { "type": "string" },
+              "type": { "type": "string", "enum": ["text", "quote"] },
+              "highlights": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "start": { "type": "number" },
+                    "end": { "type": "number" },
+                    "color": { "type": "string" },
+                    "type": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "moduleId", "blocks"]
+    }
+  },
+  "firestore": {
+    "/userModuleContent/{contentId}": {
+      "schema": "UserModuleContent",
+      "description": "Coleção de conteúdos personalizados por módulo"
+    }
+  }
+}

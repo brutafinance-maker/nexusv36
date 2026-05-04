@@ -12,6 +12,7 @@ import PremiumView from './components/PremiumView';
 import AuthView from './components/AuthView';
 import AdminView from './components/AdminView';
 import LibraryView from './components/LibraryView';
+import PBLDigital from './components/PBLDigital';
 import AnamneseView from './components/anamnese/AnamneseView';
 import ChatSidebar from './components/ChatSidebar';
 import CycleSelection from './components/CycleSelection';
@@ -24,7 +25,7 @@ import { UserStats, ActivityItem } from './types';
 import { calculateUserPoints, syncUserPoints } from './lib/rankingUtils';
 
 const App: React.FC = () => {
-  const [view, setView] = useState<'inicio' | 'ct' | 'pbl' | 'premium' | 'morfo' | 'hp' | 'foco' | 'manuais' | 'admin' | 'anamnese' | 'biblioteca'>('inicio');
+  const [view, setView] = useState<'inicio' | 'ct' | 'pbl' | 'premium' | 'morfo' | 'hp' | 'foco' | 'manuais' | 'admin' | 'anamnese' | 'biblioteca' | 'pbl-digital'>('inicio');
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [needsSetup, setNeedsSetup] = useState(false);
@@ -193,9 +194,10 @@ const App: React.FC = () => {
       <ChatSidebar isOpen={chatOpen} onClose={() => setChatOpen(false)} userStats={userStats} />
       
       <main className={`${view === 'premium' ? 'w-full flex-grow' : 'max-w-[1400px] mx-auto pb-20 px-4 md:px-8 w-full flex-grow'} ${isAnamneseModelActive ? 'pt-0' : ''}`}>
-        {view === 'inicio' ? <StatsDashboard stats={userStats} allUsers={allUsersRanking} onNavigate={setView} /> : (
+        {view === 'inicio' ? <StatsDashboard stats={userStats} allUsers={allUsersRanking} onNavigate={setView} onSyncPoints={syncPoints} /> : (
           <div className={isAnamneseModelActive || view === 'premium' ? 'pt-0' : 'pt-8'}>
             {view === 'pbl' && <PBLView userStats={userStats} onAddActivity={addActivity} onSyncPoints={syncPoints} onAwardPoints={syncPoints} />}
+            {view === 'pbl-digital' && <PBLDigital userStats={userStats} onSyncPoints={syncPoints} onClose={() => setView('inicio')} />}
             {view === 'ct' && <TrainingCenterView onAnswer={handleAnswerQuestion} />}
             {view === 'morfo' && <MorfoView userStats={userStats} onAddActivity={addActivity} />}
             {view === 'hp' && <HPView isPremium={userStats.isPremium} onAddActivity={addActivity} userStats={userStats} />}

@@ -6,6 +6,8 @@ import { db } from '../lib/firebase';
 import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { CheckCircle2, Circle, TrendingUp, Flag, Map as MapIcon, ChevronRight, Trophy, BookOpen, AlertCircle, Play } from 'lucide-react';
 
+import { generatePBLModules } from '../lib/pblData';
+
 interface SummaryProblem {
   numero: string;
   titulo: string;
@@ -160,53 +162,7 @@ const PBLView: React.FC<PBLViewProps> = ({ userDisplayName, userStats, onNavigat
     }
   };
 
-  const allModules = useMemo(() => {
-    const basicoTitles = [
-      'Introdução ao Estudo da Medicina',
-      'Proliferação e Crescimento Celular',
-      'Funções Biológicas 1',
-      'Funções Biológicas 2',
-      'Metabolismo e Nutrição',
-      'Mecanismo de Agressão e Defesa',
-      'Concepção e Gestação',
-      'Nascimento e Desenvolvimento',
-      'Vida Adulta e Envelhecimento',
-      'Percepção e Emoções',
-      'Febre e Infecção',
-      'Fadiga e Anemias'
-    ];
-    
-    const clinicoTitles = [
-      'Disúria e Edema',
-      'Perda de Sangue',
-      'Mente e Comportamento',
-      'Cardiologia e Pneumologia',
-      'Gastroenterologia',
-      'Endocrinologia',
-      'Infectologia Clínica',
-      'Ginecologia e Obstetrícia',
-      'Pediatria Clínica',
-      'Cirurgia e Urgência',
-      'Medicina da Família',
-      'Ética e Propedêutica Avançada'
-    ];
-
-    const meds = [];
-    for (let i = 1; i <= 8; i++) {
-      const titles = i <= 4 ? basicoTitles : clinicoTitles;
-      const startIdx = (i <= 4 ? (i - 1) * 3 : (i - 5) * 3);
-      
-      meds.push({
-        name: `MED ${i}`,
-        modules: [
-          { id: (i - 1) * 3 + 1, title: `ASE ${(i - 1) * 3 + 1} — ${titles[startIdx]}` },
-          { id: (i - 1) * 3 + 2, title: `ASE ${(i - 1) * 3 + 2} — ${titles[startIdx + 1]}` },
-          { id: (i - 1) * 3 + 3, title: `ASE ${(i - 1) * 3 + 3} — ${titles[startIdx + 2]}` }
-        ]
-      });
-    }
-    return meds;
-  }, []);
+  const allModules = useMemo(() => generatePBLModules(), []);
 
   const totalModulesCount = 24;
   const completedCount = userStats.completedPblModules?.length || 0;

@@ -13,17 +13,20 @@ import {
   ChevronRight,
   TrendingUp,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  GraduationCap
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import PBLDigital from './PBLDigital';
 
 interface StatsDashboardProps {
   stats: UserStats;
   allUsers: any[];
   onNavigate: (view: any) => void;
+  onSyncPoints?: () => void;
 }
 
-const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, allUsers, onNavigate }) => {
+const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, allUsers, onNavigate, onSyncPoints }) => {
   const rankingCycle = stats.ciclo;
 
   const filteredRanking = useMemo(() => {
@@ -278,6 +281,43 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats, allUsers, onNavi
         {/* Sidebar Column */}
         <div className="space-y-8">
           
+          {/* PBL Digital Entry Card */}
+          <motion.div 
+            whileHover={{ y: -5 }}
+            onClick={() => onNavigate('pbl-digital')}
+            className="bg-med-card dark:bg-slate-900 border border-med-border dark:border-slate-800 rounded-2xl p-6 shadow-sm cursor-pointer group"
+          >
+            <div className="flex items-center justify-between mb-4">
+               <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-500/10 text-purple-500 rounded-xl">
+                    <GraduationCap className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-med-text dark:text-white">PBL Digital</h2>
+                    <p className="text-[10px] font-bold text-med-sec dark:text-slate-500 uppercase tracking-widest">Acompanhamento ASE</p>
+                  </div>
+               </div>
+               <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-purple-500 transition-colors" />
+            </div>
+
+            <div className="space-y-4">
+               <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Progresso Ciclo</span>
+                  <span className="text-xs font-black text-purple-500">{stats.completedPblModules?.length || 0}/24</span>
+               </div>
+               <div className="w-full h-1.5 bg-med-bg dark:bg-slate-800 rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.round(((stats.completedPblModules?.length || 0) / 24) * 100)}%` }}
+                    className="h-full bg-purple-500"
+                  />
+               </div>
+               <p className="text-[9px] font-bold text-slate-400 text-center uppercase tracking-widest group-hover:text-purple-500 transition-colors">
+                  Clique para gerenciar módulos
+               </p>
+            </div>
+          </motion.div>
+
           {/* 5. Seção de Prioridades */}
           <section className="bg-med-card dark:bg-slate-900 border border-med-border dark:border-slate-800 rounded-2xl p-6 shadow-sm">
             <h2 className="text-base font-bold text-med-text dark:text-white mb-6 flex items-center gap-2">

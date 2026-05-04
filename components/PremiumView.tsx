@@ -17,7 +17,9 @@ import {
   Award,
   Search,
   Settings,
-  Bell
+  Bell,
+  X,
+  LogOut
 } from 'lucide-react';
 import NexusVideoPlayer from './NexusVideoPlayer';
 
@@ -39,9 +41,9 @@ const STREAMING_COLORS = {
 };
 
 const SPECIALTY_THEMES: Record<string, { img: string; icon: string; accent: string; desc: string; gradient: string }> = {
-  "Pediatria 1": { 
+  "Pediatria": { 
     img: "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&q=80&w=800",
-    icon: "👶", accent: "#00A3FF", desc: "Neonatologia e desenvolvimento infantil.", gradient: "from-blue-600 to-cyan-400"
+    icon: "👶", accent: "#00A3FF", desc: "Neonatologia, pediatria clínica e desenvolvimento infantil.", gradient: "from-blue-600 to-cyan-400"
   },
   "Clínica Médica": { 
     img: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=800",
@@ -60,7 +62,7 @@ const SPECIALTY_THEMES: Record<string, { img: string; icon: string; accent: stri
     icon: "📊", accent: "#8B5CF6", desc: "Epidemiologia, ética e SUS.", gradient: "from-purple-600 to-violet-400"
   },
   "Hematologia": { 
-    img: "https://images.unsplash.com/photo-1631815587646-b85a1bb027e1?auto=format&fit=crop&q=80&w=800",
+    img: "https://raw.githubusercontent.com/samielabud-ui/nexus-capas/main/Gemini_Generated_Image_v4eounv4eounv4eo.png",
     icon: "🩸", accent: "#ef4444", desc: "Anemias, leucemias, linfomas, mieloma e hemostasia.", gradient: "from-red-700 to-rose-500"
   },
   "Extensivo": { 
@@ -159,10 +161,29 @@ const PEDIATRIA_1_LESSONS: (VideoLesson & { duration: string; block: string; isB
   { id: 'kPI3lzbKkoo', title: 'Caso Clínico 02', duration: '11:00', block: '4️⃣ DOENÇAS EXANTEMÁTICAS' },
   { id: '6du-1JJd8rQ', title: 'Caso Clínico 03', duration: '09:00', block: '4️⃣ DOENÇAS EXANTEMÁTICAS' },
   { id: 'yWSWkqAAG1M', title: 'Caso Clínico 04', duration: '12:00', block: '4️⃣ DOENÇAS EXANTEMÁTICAS' },
-  { id: 'i7SEn1c5pxE', title: 'Triagem Neonatal', duration: '42:00', block: '5️⃣ BÔNUS PED1', isBonus: true },
-  { id: 'IDy-T2pE2Zg', title: 'O Exame Físico Neonatal', duration: '47:00', block: '5️⃣ BÔNUS PED1', isBonus: true },
-  { id: 'jFq-l20Truw', title: 'Doenças do Trato Gastrointestinal', duration: '26:00', block: '5️⃣ BÔNUS PED1', isBonus: true },
-  { id: 'Mv7SJ0_IoZQ', title: 'Miscelânea', duration: '52:00', block: '5️⃣ BÔNUS PED1', isBonus: true },
+  { id: 'i7SEn1c5pxE', title: 'Triagem Neonatal', duration: '42:00', block: '5️⃣ BÔNUS PEDIATRIA', isBonus: true },
+  { id: 'IDy-T2pE2Zg', title: 'O Exame Físico Neonatal', duration: '47:00', block: '5️⃣ BÔNUS PEDIATRIA', isBonus: true },
+  { id: 'jFq-l20Truw', title: 'Doenças do Trato Gastrointestinal', duration: '26:00', block: '5️⃣ BÔNUS PEDIATRIA', isBonus: true },
+  { id: 'Mv7SJ0_IoZQ', title: 'Miscelânea', duration: '52:00', block: '5️⃣ BÔNUS PEDIATRIA', isBonus: true },
+];
+
+const PEDIATRIA_2_LESSONS: (VideoLesson & { duration: string; block: string; isBonus?: boolean })[] = [
+  { id: '0yntZmbtXII', title: 'Aleitamento materno Queixas comuns e contraindicações', duration: '33:22', block: '6️⃣ PEDIATRIA 2 — CRESCIMENTO E DESENVOLVIMENTO' },
+  { id: '13cgiY7RiQE', title: 'Puberdade', duration: '42:10', block: '6️⃣ PEDIATRIA 2 — CRESCIMENTO E DESENVOLVIMENTO' },
+  { id: '78ZFyla04DE', title: 'Desenvolvimento', duration: '54:00', block: '6️⃣ PEDIATRIA 2 — CRESCIMENTO E DESENVOLVIMENTO' },
+  { id: 'WQN0W9xyIyU', title: 'Crescimento', duration: '40:21', block: '6️⃣ PEDIATRIA 2 — CRESCIMENTO E DESENVOLVIMENTO' },
+  { id: 'sGi_eMEQkg4', title: 'Aleitamento materno Definições e composição do leite', duration: '41:45', block: '6️⃣ PEDIATRIA 2 — CRESCIMENTO E DESENVOLVIMENTO' },
+  { id: 'v-e61m67feA', title: 'Suplementação de micronutriente', duration: '14:04', block: '6️⃣ PEDIATRIA 2 — CRESCIMENTO E DESENVOLVIMENTO' },
+];
+
+const PEDIATRIA_3_LESSONS: (VideoLesson & { duration: string; block: string; isBonus?: boolean })[] = [
+  { id: '10yd3ABCmCM', title: 'DESNUTRIÇÃO GRAVE', duration: '36:23', block: '7️⃣ PEDIATRIA 3 — NUTRIÇÃO E IMUNIZAÇÕES' },
+  { id: '38umeTVX5oM', title: 'OBESIDADE E BAIXA ESTATURA', duration: '53:52', block: '7️⃣ PEDIATRIA 3 — NUTRIÇÃO E IMUNIZAÇÕES' },
+  { id: 'JxAhQH6xwQw', title: 'AVALIAÇÃO NUTRICIONAL', duration: '32:30', block: '7️⃣ PEDIATRIA 3 — NUTRIÇÃO E IMUNIZAÇÕES' },
+  { id: 'PDAk0y93KvU', title: 'As Vacinas Parte 02', duration: '47:19', block: '7️⃣ PEDIATRIA 3 — NUTRIÇÃO E IMUNIZAÇÕES' },
+  { id: 'PdwzKZKXbjQ', title: 'As Vacinas Parte 01', duration: '52:18', block: '7️⃣ PEDIATRIA 3 — NUTRIÇÃO E IMUNIZAÇÕES' },
+  { id: 'v07t0SzXpcA', title: 'Calendários Vacinais', duration: '23:00', block: '7️⃣ PEDIATRIA 3 — NUTRIÇÃO E IMUNIZAÇÕES' },
+  { id: 'YkrBWy2s9ZI', title: 'Imunizações Aspectos Iniciais', duration: '42:00', block: '7️⃣ PEDIATRIA 3 — NUTRIÇÃO E IMUNIZAÇÕES' },
 ];
 
 const SANARFLIX_COURSES = [
@@ -178,7 +199,7 @@ const SANARFLIX_COURSES = [
 
 const VEST_COURSES = [ "Reprodução Humana", "Embriologia Animal" ];
 const MEDCOF_COURSES = [ "Extensivo", "Curso de Ultrassom – POCUS", "Desafios de Imagem", "Estações Multimídia", "Hands On – OSCE", "Medical Life Hacks", "RX" ];
-const MEDCURSO_COURSES = [ "Pediatria 1", "Ginecologia e Obstetrícia", "Cirurgia", "Clínica Médica", "Hematologia", "Preventiva" ];
+const MEDCURSO_COURSES = [ "Pediatria", "Ginecologia e Obstetrícia", "Cirurgia", "Clínica Médica", "Hematologia", "Preventiva" ];
 
 const PREMIUM_PLATFORMS = [
   { id: 'sanarflix', title: 'Sanarflix', category: 'official', description: 'Plataforma oficial Sanarflix.', image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=600' },
@@ -190,10 +211,54 @@ const PREMIUM_PLATFORMS = [
 const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onAwardPoints, onIncrementUsage, onNavigate }) => {
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
+  const [selectedSubCourse, setSelectedSubCourse] = useState<string | null>(null);
   const [activeVideo, setActiveVideo] = useState<VideoLesson | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isScrolled, setIsScrolled] = useState(false);
   
   const videoRef = useRef<HTMLIFrameElement>(null);
   const watchedVideos = userStats.watchedLessons || [];
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const searchResults = useMemo(() => {
+    if (!searchTerm.trim()) return null;
+    const term = searchTerm.toLowerCase();
+    
+    const results: { type: 'course' | 'lesson' | 'platform', title: string, platform?: string, data: any }[] = [];
+    
+    PREMIUM_PLATFORMS.forEach(p => {
+      if (p.title.toLowerCase().includes(term)) results.push({ type: 'platform', title: p.title, data: p });
+    });
+
+    MEDCURSO_COURSES.forEach(c => {
+      if (c.toLowerCase().includes(term)) results.push({ type: 'course', title: c, platform: 'Medcurso', data: c });
+    });
+    SANARFLIX_COURSES.forEach(c => {
+      if (c.toLowerCase().includes(term)) results.push({ type: 'course', title: c, platform: 'Sanarflix', data: c });
+    });
+
+    const allLessons = [
+      ...EMBRIOLOGIA_LESSONS.map(l => ({ ...l, origin: 'Embriologia' })),
+      ...REPRODUCAO_HUMANA_LESSONS.map(l => ({ ...l, origin: 'Reprodução' })),
+      ...PEDIATRIA_1_LESSONS.map(l => ({ ...l, origin: 'Pediatria 1' })),
+      ...PEDIATRIA_2_LESSONS.map(l => ({ ...l, origin: 'Pediatria 2' })),
+      ...PEDIATRIA_3_LESSONS.map(l => ({ ...l, origin: 'Pediatria 3' })),
+      ...HEMATOLOGIA_LESSONS.map(l => ({ ...l, origin: 'Hematologia' }))
+    ];
+
+    allLessons.forEach(l => {
+      if (l.title.toLowerCase().includes(term)) {
+        results.push({ type: 'lesson', title: l.title, platform: l.origin, data: l });
+      }
+    });
+
+    return results;
+  }, [searchTerm]);
   
   const premiumHistory = useMemo(() => 
     (userStats.recentActivity || [])
@@ -244,10 +309,15 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
     } catch (err) { console.error(err); }
   };
 
-  const getLessonsForCourse = (course: string) => {
+  const getLessonsForCourse = (course: string, subCourse?: string) => {
     if (course === 'Embriologia' || course === 'Embriologia Animal') return EMBRIOLOGIA_LESSONS;
     if (course === 'Reprodução Humana') return REPRODUCAO_HUMANA_LESSONS;
-    if (course === 'Pediatria 1') return PEDIATRIA_1_LESSONS;
+    if (course === 'Pediatria') {
+      if (subCourse === 'Pediatria 1') return PEDIATRIA_1_LESSONS;
+      if (subCourse === 'Pediatria 2') return PEDIATRIA_2_LESSONS;
+      if (subCourse === 'Pediatria 3') return PEDIATRIA_3_LESSONS;
+      return PEDIATRIA_1_LESSONS; // Default
+    }
     if (course === 'Hematologia') return HEMATOLOGIA_LESSONS;
     return [{ id: 'dQw4w9WgXcQ', title: `Aula 01: Introdução a ${course}`, duration: '15:00' }];
   };
@@ -261,8 +331,8 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
   }, [selectedPlatform]);
 
   const filteredLessons = useMemo(() => {
-    return getLessonsForCourse(selectedCourse || '');
-  }, [selectedCourse]);
+    return getLessonsForCourse(selectedCourse || '', selectedSubCourse || undefined);
+  }, [selectedCourse, selectedSubCourse]);
 
   if (!userStats.isPremium && !userStats.adm) {
     return (
@@ -289,7 +359,8 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
       return acc;
     }, {});
 
-    const progressValue = Math.round((watchedVideos.length / filteredLessons.length) * 100);
+    const currentCourseWatchedCount = filteredLessons.filter(lesson => watchedVideos.includes(lesson.id)).length;
+    const progressValue = filteredLessons.length > 0 ? Math.round((currentCourseWatchedCount / filteredLessons.length) * 100) : 0;
 
     return (
       <div className="fixed inset-0 z-[60] bg-[#0B1120] flex flex-col lg:flex-row animate-in fade-in duration-300 overflow-hidden">
@@ -503,6 +574,10 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {currentCourses.map((course, idx) => {
               const theme = SPECIALTY_THEMES[course] || SPECIALTY_THEMES["Clínica Médica"];
+              const courseLessons = getLessonsForCourse(course);
+              const watchedInCourse = courseLessons.filter(l => watchedVideos.includes(l.id)).length;
+              const courseProgress = courseLessons.length > 0 ? Math.round((watchedInCourse / courseLessons.length) * 100) : 0;
+
               return (
                 <motion.div 
                   key={course}
@@ -512,9 +587,15 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
                   whileHover={{ y: -8 }}
                   onClick={() => {
                     setSelectedCourse(course);
+                    if (course === 'Pediatria') {
+                      // Don't auto-select video, let him choose sub-course
+                      return;
+                    }
                     const lessons = getLessonsForCourse(course);
                     if (lessons.length > 0) {
-                      handleLessonSelect(lessons[0], course);
+                      // Find first unwatched lesson
+                      const firstUnwatched = lessons.find(l => !watchedVideos.includes(l.id)) || lessons[0];
+                      handleLessonSelect(firstUnwatched, course);
                     }
                   }}
                   className="group relative h-[320px] rounded-[2.5rem] bg-[#111827] border border-white/5 overflow-hidden cursor-pointer transition-all duration-500 shadow-2xl hover:shadow-[#3B82F6]/5"
@@ -549,7 +630,10 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
                          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: theme.accent }} />
                          <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Especialidade</span>
                       </div>
-                      <h3 className="text-3xl font-black text-white tracking-tighter leading-tight group-hover:text-[#3B82F6] transition-colors">{course}</h3>
+                      <div className="flex items-center justify-between">
+                         <h3 className="text-3xl font-black text-white tracking-tighter leading-tight group-hover:text-[#3B82F6] transition-colors">{course}</h3>
+                         <span className="text-xs font-black text-[#3B82F6] italic opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">{courseProgress}%</span>
+                      </div>
                       <p className="text-[11px] text-[#9CA3AF] font-bold uppercase tracking-widest line-clamp-1 opacity-60 group-hover:opacity-100 transition-opacity">
                          {theme.desc}
                       </p>
@@ -558,7 +642,7 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
                         <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
                           <motion.div 
                             initial={{ width: 0 }}
-                            whileInView={{ width: '100%' }}
+                            whileInView={{ width: `${courseProgress}%` }}
                             transition={{ duration: 1, delay: 0.5 }}
                             className={`h-full bg-gradient-to-r ${theme.gradient} opacity-40 group-hover:opacity-100 transition-opacity`}
                           />
@@ -571,25 +655,234 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
             })}
           </div>
         </div>
+
+        {/* Sub-Course Selection for Pediatria */}
+        <AnimatePresence>
+          {selectedCourse === 'Pediatria' && !activeVideo && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-[#0B1120]/95 backdrop-blur-xl flex items-center justify-center p-6"
+            >
+              <div className="max-w-4xl w-full">
+                <div className="flex items-center justify-between mb-12">
+                  <div>
+                    <h3 className="text-4xl font-black text-white italic tracking-tighter uppercase">Pediatria</h3>
+                    <p className="text-[#9CA3AF] text-sm mt-2 font-medium tracking-widest uppercase">Escolha a seção desejada</p>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedCourse(null)}
+                    className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-all"
+                  >
+                    <ChevronLeft size={24} />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {[
+                    { id: 'Pediatria 1', title: 'Pediatria 1', desc: 'Neonatologia e Doenças Exantemáticas', icon: '🐣', accent: '#3B82F6' },
+                    { id: 'Pediatria 2', title: 'Pediatria 2', desc: 'Crescimento e Desenvolvimento', icon: '📈', accent: '#10B981' },
+                    { id: 'Pediatria 3', title: 'Pediatria 3', desc: 'Nutrição e Imunizações', icon: '💉', accent: '#F59E0B' }
+                  ].map((sub) => {
+                    const subLessons = getLessonsForCourse('Pediatria', sub.id);
+                    const watchedInSub = subLessons.filter(l => watchedVideos.includes(l.id)).length;
+                    const subProgress = subLessons.length > 0 ? Math.round((watchedInSub / subLessons.length) * 100) : 0;
+
+                    return (
+                      <motion.div
+                        key={sub.id}
+                        whileHover={{ scale: 1.05, y: -5 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          setSelectedSubCourse(sub.id);
+                          const lessons = getLessonsForCourse('Pediatria', sub.id);
+                          const firstUnwatched = lessons.find(l => !watchedVideos.includes(l.id)) || lessons[0];
+                          handleLessonSelect(firstUnwatched, sub.id);
+                        }}
+                        className="group p-8 rounded-[2.5rem] bg-[#111827] border border-white/5 hover:border-white/10 cursor-pointer transition-all shadow-2xl relative overflow-hidden"
+                      >
+                        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                          <Play size={100} fill="currentColor" />
+                        </div>
+                        
+                        <div className="relative z-10 space-y-6">
+                          <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-3xl shadow-xl shadow-black/40">
+                            {sub.icon}
+                          </div>
+                          <div>
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-2xl font-black text-white italic tracking-tight">{sub.title}</h4>
+                              <span className="text-sm font-black text-[#3B82F6]">{subProgress}%</span>
+                            </div>
+                            <p className="text-[#9CA3AF] text-sm mt-1 font-medium">{sub.desc}</p>
+                          </div>
+
+                          <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                            <motion.div 
+                              initial={{ width: 0 }}
+                              animate={{ width: `${subProgress}%` }}
+                              className="h-full bg-[#3B82F6]"
+                            />
+                          </div>
+
+                          <div className="flex items-center gap-2 text-[10px] font-black text-[#3B82F6] uppercase tracking-[0.2em] group-hover:translate-x-2 transition-transform">
+                            Explorar Seção <ChevronRight size={14} />
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-[#0B1120] text-[#E5E7EB] pb-32 overflow-x-hidden relative">
-      {/* Global Exit Button (Since navbar is hidden) */}
-      <div className="absolute top-8 left-8 z-50">
-        <button 
-          onClick={() => onNavigate?.('inicio')}
-          className="flex items-center gap-2 bg-black/40 hover:bg-black/60 backdrop-blur-md text-white px-4 py-2 rounded-full border border-white/10 transition-all font-bold text-xs uppercase tracking-widest group"
-        >
-          <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-          Voltar ao Nexus
-        </button>
-      </div>
+      {/* Premium Navbar Style Netflix */}
+      <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 px-6 md:px-12 h-20 flex items-center justify-between ${isScrolled ? 'bg-[#0B1120] border-b border-white/5 shadow-2xl' : 'bg-gradient-to-b from-black/80 to-transparent'}`}>
+        <div className="flex items-center gap-8 md:gap-12 lg:gap-16">
+          <div 
+            onClick={() => { setSelectedPlatform(null); setSelectedCourse(null); setSearchTerm(''); }}
+            className="cursor-pointer flex items-center gap-2"
+          >
+            <span className="text-2xl font-black text-blue-500 italic tracking-tighter uppercase italic">Nexus</span>
+            <span className="px-2 py-0.5 bg-blue-500 text-white text-[8px] font-black uppercase rounded tracking-widest leading-none">Premium</span>
+          </div>
+
+          <div className="hidden md:flex items-center gap-6">
+            <button onClick={() => { setSearchTerm(''); setSelectedPlatform(null); }} className="text-xs font-black uppercase tracking-widest text-white/60 hover:text-white transition-colors">Início</button>
+            <button onClick={() => setSelectedPlatform('medcurso')} className="text-xs font-black uppercase tracking-widest text-white/60 hover:text-white transition-colors">Cursos</button>
+            <button className="text-xs font-black uppercase tracking-widest text-white/60 hover:text-white transition-colors">Materiais</button>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-6 md:gap-8">
+          <div className="relative group">
+            <Search className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${searchTerm ? 'text-blue-500' : 'text-white/40'}`} size={16} />
+            <input 
+              type="text"
+              placeholder="Aulas, cursos, PDFs..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="bg-white/5 border border-white/10 rounded-full py-2 pl-10 pr-4 text-xs font-black uppercase tracking-widest text-white focus:outline-none focus:ring-1 focus:ring-blue-500/50 w-32 md:w-64 transition-all"
+            />
+            {searchTerm && (
+              <button 
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-4 pl-4 border-l border-white/10">
+            <div className="hidden sm:block text-right">
+              <p className="text-[10px] font-black text-white italic truncate max-w-[100px] leading-none mb-1">{userStats.name || 'Estudante'}</p>
+              <div className="flex items-center justify-end gap-1">
+                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                 <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">Premium Active</span>
+              </div>
+            </div>
+            <div className="relative group/profile">
+               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center p-0.5 cursor-pointer ring-2 ring-white/5 group-hover/profile:ring-blue-500/50 transition-all">
+                  <div className="w-full h-full bg-[#0B1120] rounded-[calc(0.75rem-2px)] flex items-center justify-center text-blue-500 font-bold overflow-hidden">
+                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userStats.name || 'Nexus'}`} className="w-full h-full object-cover" alt="Profile" />
+                  </div>
+               </div>
+               
+               <div className="absolute top-12 right-0 w-48 bg-[#111827] border border-white/10 rounded-2xl shadow-2xl p-2 opacity-0 translate-y-2 pointer-events-none group-hover/profile:opacity-100 group-hover/profile:translate-y-0 group-hover/profile:pointer-events-auto transition-all">
+                  <button className="w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 text-[10px] font-black text-[#9CA3AF] hover:text-white uppercase tracking-widest transition-colors flex items-center gap-3">
+                    <Star size={14} /> Minha Conta
+                  </button>
+                  <button 
+                    onClick={() => onNavigate?.('inicio')}
+                    className="w-full text-left px-4 py-3 rounded-xl hover:bg-red-500/10 text-[10px] font-black text-red-400 uppercase tracking-widest transition-colors flex items-center gap-3"
+                  >
+                    <LogOut size={14} /> Sair do Nexus
+                  </button>
+               </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Global Exit Button (Since navbar is hidden) - Removed as integrated in New Navbar */}
 
       {/* Hero Section */}
-      <section className="relative w-full h-[70vh] md:h-[85vh] overflow-hidden">
+      {searchTerm ? (
+        <div className="pt-32 px-8 md:px-16 animate-in fade-in slide-in-from-bottom-4 duration-500">
+           <h2 className="text-4xl font-black text-white italic tracking-tighter mb-4 uppercase">
+              Resultados para <span className="text-blue-500">"{searchTerm}"</span>
+           </h2>
+           <p className="text-[#9CA3AF] text-xs font-black uppercase tracking-[0.2em] mb-12">
+              Encontramos {searchResults?.length || 0} itens correspondentes
+           </p>
+
+           {searchResults && searchResults.length > 0 ? (
+             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
+                {searchResults.map((result, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: idx * 0.05 }}
+                    whileHover={{ y: -5 }}
+                    onClick={() => {
+                      if (result.type === 'platform') setSelectedPlatform(result.data.id);
+                      if (result.type === 'course') {
+                        setSelectedPlatform(result.platform === 'Medcurso' ? 'medcurso' : 'sanarflix');
+                        setSelectedCourse(result.data);
+                      }
+                      if (result.type === 'lesson') {
+                        handleLessonSelect(result.data, result.platform);
+                      }
+                      setSearchTerm('');
+                    }}
+                    className="group bg-[#111827] border border-white/5 rounded-[2rem] overflow-hidden cursor-pointer shadow-xl relative"
+                  >
+                    <div className="aspect-[16/10] bg-[#1F2937] relative">
+                      {result.type === 'lesson' ? (
+                        <img 
+                          src={`https://img.youtube.com/vi/${result.data.id}/mqdefault.jpg`} 
+                          alt={result.title}
+                          className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-4xl opacity-20">
+                           {result.type === 'platform' ? '📺' : '📚'}
+                        </div>
+                      )}
+                      <div className="absolute top-4 left-4">
+                         <span className="px-3 py-1 bg-black/60 backdrop-blur-md rounded-md text-[8px] font-black text-white uppercase tracking-widest border border-white/10">
+                            {result.type}
+                         </span>
+                      </div>
+                    </div>
+                    <div className="p-6">
+                       <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1 truncate">{result.platform || 'NEXUS'}</p>
+                       <h4 className="text-sm font-black text-white leading-tight group-hover:text-blue-400 transition-colors line-clamp-2">{result.title}</h4>
+                    </div>
+                  </motion.div>
+                ))}
+             </div>
+           ) : (
+             <div className="flex flex-col items-center justify-center py-32 text-center">
+                <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center text-4xl mb-6 opacity-30">🔍</div>
+                <h3 className="text-xl font-bold text-white mb-2">Nenhum resultado encontrado</h3>
+                <p className="text-[#9CA3AF] text-sm max-w-xs">Tente nomes de aulas (Hematologia, Pediatria) ou plataformas específicas.</p>
+             </div>
+           )}
+        </div>
+      ) : (
+        <>
+          <section className="relative w-full h-[70vh] md:h-[85vh] overflow-hidden">
         <div className="absolute inset-0">
           <img 
             src="https://images.unsplash.com/photo-1631815587646-b85a1bb027e1?auto=format&fit=crop&q=80&w=1600" 
@@ -735,6 +1028,50 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
           </div>
         </section>
 
+        {/* Jornada da Pediatria */}
+        <section>
+          <h3 className="text-xl md:text-3xl font-black text-white mb-8 italic flex items-center gap-4">
+            Universo da <span className="text-blue-500">Pediatria</span> <div className="h-px flex-grow bg-blue-500/20" />
+          </h3>
+          <div className="flex gap-6 overflow-x-auto no-scrollbar pb-10 -mx-8 px-8">
+            {[...PEDIATRIA_1_LESSONS, ...PEDIATRIA_2_LESSONS, ...PEDIATRIA_3_LESSONS].slice(0, 15).map((lesson) => (
+              <motion.div 
+                key={lesson.id} 
+                whileHover={{ scale: 1.05 }}
+                onClick={() => {
+                   setSelectedPlatform('medcurso');
+                   setSelectedCourse('Pediatria');
+                   handleLessonSelect(lesson, 'Pediatria');
+                }}
+                className="flex-none w-[240px] md:w-[320px] bg-[#111827] rounded-[2rem] overflow-hidden cursor-pointer relative group shadow-xl border border-white/5"
+              >
+                <div className="aspect-[16/10] bg-[#1F2937] relative">
+                   <img 
+                    src={`https://img.youtube.com/vi/${lesson.id}/mqdefault.jpg`}
+                    className="w-full h-full object-cover opacity-80"
+                    referrerPolicy="no-referrer"
+                    alt={lesson.title}
+                   />
+                   <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
+                   <div className="absolute top-4 right-4 px-3 py-1 rounded-lg bg-black/60 text-[10px] font-black text-white backdrop-blur-md">
+                      {lesson.duration}
+                   </div>
+                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <PlayCircle className="text-white w-12 h-12" />
+                   </div>
+                </div>
+                <div className="p-6">
+                  <h5 className="text-sm font-black text-[#E5E7EB] line-clamp-1 group-hover:text-[#3B82F6] transition-colors">{lesson.title}</h5>
+                  <div className="flex items-center gap-4 mt-3">
+                     <span className="text-[10px] font-black text-[#9CA3AF] uppercase tracking-widest">AULA HD</span>
+                     <span className="text-[10px] font-black text-blue-500/80 uppercase">KIDS MASTER</span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
         {/* Recomendado para Você */}
         <section>
           <h3 className="text-xl md:text-3xl font-black text-white mb-8 italic flex items-center gap-4">
@@ -801,6 +1138,8 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
           </div>
         </section>
       </div>
+      </>
+      )}
     </div>
   );
 };
