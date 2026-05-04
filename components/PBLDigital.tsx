@@ -1,12 +1,21 @@
-
 import React, { useMemo, useState } from 'react';
 import { UserStats } from '../types';
-import { motion } from 'motion/react';
-import { CheckCircle2, Circle, GraduationCap, ChevronLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { 
+  CheckCircle2, 
+  Circle, 
+  GraduationCap, 
+  ChevronLeft, 
+  Folder as FolderIcon, 
+  FileText, 
+  Clock 
+} from 'lucide-react';
 import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { generatePBLModules } from '../lib/pblData';
 import PBLModuleEditor from './PBLModuleEditor';
+import PBLPlaylistView from './PBLPlaylistView';
+import PBLDocumentListView from './PBLDocumentListView';
 
 interface PBLDigitalProps {
   userStats: UserStats;
@@ -15,9 +24,12 @@ interface PBLDigitalProps {
 }
 
 const PBLDigital: React.FC<PBLDigitalProps> = ({ userStats, onSyncPoints, onClose }) => {
+  const [view, setView] = useState<'modules' | 'playlists' | 'documents' | 'editor'>('modules');
   const [selectedModule, setSelectedModule] = useState<{ id: number, title: string } | null>(null);
+  const [selectedPlaylist, setSelectedPlaylist] = useState<{ id: string, title: string } | null>(null);
+  const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
+
   const allModules = useMemo(() => generatePBLModules(), []);
-  
   const completedModules = userStats.completedPblModules || [];
 
   const handleToggleModule = async (moduleId: number) => {
@@ -45,19 +57,47 @@ const PBLDigital: React.FC<PBLDigitalProps> = ({ userStats, onSyncPoints, onClos
     }
   };
 
-  if (selectedModule) {
+  if (view === 'playlists' && selectedModule) {
+    return (
+      <PBLPlaylistView 
+        userStats={userStats}
+        module={selectedModule}
+        onBack={() => setView('modules')}
+        onSelectPlaylist={(pl) => {
+          setSelectedPlaylist(pl);
+          setView('documents');
+        }}
+      />
+    );
+  }
+
+  if (view === 'documents' && selectedPlaylist) {
+    return (
+      <PBLDocumentListView 
+        userStats={userStats}
+        playlist={selectedPlaylist}
+        onBack={() => setView('playlists')}
+        onSelectDocument={(docId) => {
+          setSelectedDocId(docId);
+          setView('editor');
+        }}
+      />
+    );
+  }
+
+  if (view === 'editor' && selectedDocId) {
     return (
       <PBLModuleEditor 
-        userStats={userStats} 
-        module={selectedModule} 
-        onClose={() => setSelectedModule(null)} 
+        docId={selectedDocId}
+        onBack={() => setView('documents')}
+        userStats={userStats}
       />
     );
   }
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Header */}
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+      {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
@@ -72,14 +112,14 @@ const PBLDigital: React.FC<PBLDigitalProps> = ({ userStats, onSyncPoints, onClos
             </div>
             <div>
               <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight italic">PBL <span className="text-purple-500">DIGITAL</span></h1>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Controle de Módulos ASE — Ciclo Básico & Clínico</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Plataforma de Organização de Estudos</p>
             </div>
           </div>
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-8 py-4 rounded-[2rem] shadow-sm flex items-center gap-12">
            <div className="text-center">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Módulos</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Concluídos</p>
               <p className="text-2xl font-black text-slate-900 dark:text-white italic">{completedModules.length}<span className="text-slate-300 dark:text-slate-700 mx-1">/</span>24</p>
            </div>
            <div className="h-10 w-px bg-slate-100 dark:bg-slate-800" />
@@ -102,10 +142,6 @@ const PBLDigital: React.FC<PBLDigitalProps> = ({ userStats, onSyncPoints, onClos
           >
              <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.1)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.1)_50%,rgba(255,255,255,0.1)_75%,transparent_75%,transparent)] bg-[length:20px_20px]" />
           </motion.div>
-        </div>
-        <div className="absolute -top-6 left-0 right-0 flex justify-between px-2">
-           <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Início do Ciclo</span>
-           <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Conclusão Total</span>
         </div>
       </div>
 
@@ -137,6 +173,7 @@ const PBLDigital: React.FC<PBLDigitalProps> = ({ userStats, onSyncPoints, onClos
                         handleToggleModule(module.id);
                       } else {
                         setSelectedModule(module);
+                        setView('playlists');
                       }
                     }}
                     className={`w-full group relative flex items-center gap-4 p-4 rounded-3xl border-2 transition-all text-left ${

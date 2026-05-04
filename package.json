@@ -12,11 +12,12 @@
   "dependencies": {
     "@google/genai": "^1.41.0",
     "firebase": "^12.10.0",
+    "framer-motion": "^12.38.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
     "lucide-react": "^0.575.0",
-    "motion": "^12.36.0",
+    "motion": "^12.38.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   },

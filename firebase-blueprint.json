@@ -1,46 +1,40 @@
 {
   "entities": {
-    "UserModuleContent": {
-      "title": "Conteúdo Digital do PBL",
-      "description": "Armazena as anotações, marcações e fontes de um usuário para um módulo específico.",
+    "PBLPlaylist": {
+      "title": "Playlist de Estudo",
+      "description": "Uma pasta/coleção de documentos dentro de um módulo PBL.",
       "type": "object",
       "properties": {
         "userId": { "type": "string" },
         "moduleId": { "type": "string" },
-        "blocks": {
-          "type": "array",
-          "description": "Lista de blocos de texto adicionados pelo usuário",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": { "type": "string" },
-              "text": { "type": "string" },
-              "source": { "type": "string" },
-              "type": { "type": "string", "enum": ["text", "quote"] },
-              "highlights": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "start": { "type": "number" },
-                    "end": { "type": "number" },
-                    "color": { "type": "string" },
-                    "type": { "type": "string" }
-                  }
-                }
-              }
-            }
-          }
-        },
+        "title": { "type": "string" },
+        "color": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "moduleId", "title"]
+    },
+    "PBLDocument": {
+      "title": "Documento Digital",
+      "description": "Um documento individual tipo Notion dentro de uma playlist.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "playlistId": { "type": "string" },
+        "title": { "type": "string" },
+        "blocks": { "type": "array" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["userId", "moduleId", "blocks"]
+      "required": ["userId", "playlistId", "title"]
     }
   },
   "firestore": {
-    "/userModuleContent/{contentId}": {
-      "schema": "UserModuleContent",
-      "description": "Coleção de conteúdos personalizados por módulo"
+    "/pblPlaylists/{playlistId}": {
+      "schema": "PBLPlaylist",
+      "description": "Coleção de playlists organizadas por módulo"
+    },
+    "/pblDocuments/{documentId}": {
+      "schema": "PBLDocument",
+      "description": "Coleção de documentos dentro das playlists"
     }
   }
 }
