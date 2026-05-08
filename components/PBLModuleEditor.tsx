@@ -25,6 +25,8 @@ import {
   Italic,
   Underline,
   Strikethrough,
+  Undo,
+  Redo,
   MessageSquare,
   Type as TypeIcon,
   Palette,
@@ -106,6 +108,11 @@ const PBLModuleEditor: React.FC<PBLModuleEditorProps> = ({ userStats, docId, onB
   const [fontSize, setFontSize] = useState('18px');
   const [customColorCodes, setCustomColorCodes] = useState(COLOR_CODES);
 
+  // History for Undo/Redo
+  const [history, setHistory] = useState<{ title: string; blocks: TextBlock[] }[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const isInternalUpdate = useRef(false);
+
   const contentRef = useRef<HTMLDivElement>(null);
 
   // Load Document
@@ -116,10 +123,13 @@ const PBLModuleEditor: React.FC<PBLModuleEditorProps> = ({ userStats, docId, onB
         const snap = await getDoc(doc(db, 'pblDocuments', docId));
         if (snap.exists()) {
           const data = snap.data();
-          setDocData({
+          const initialData = {
             title: data.title || '',
             blocks: data.blocks || []
-          });
+          };
+          setDocData(initialData);
+          setHistory([JSON.parse(JSON.stringify(initialData))]);
+          setHistoryIndex(0);
           if (data.colorCodes) {
             setCustomColorCodes(data.colorCodes);
           }
@@ -132,6 +142,74 @@ const PBLModuleEditor: React.FC<PBLModuleEditorProps> = ({ userStats, docId, onB
     };
     loadDoc();
   }, [docId]);
+
+  // Track history changes
+  useEffect(() => {
+    if (!docData || loading) return;
+    if (isInternalUpdate.current) {
+      isInternalUpdate.current = false;
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      setHistory(prev => {
+        const sliced = prev.slice(0, historyIndex + 1);
+        const lastEntry = sliced[sliced.length - 1];
+        
+        // Only push if content actually changed significantly (avoid duplicate states)
+        const currentString = JSON.stringify(docData);
+        if (lastEntry && JSON.stringify(lastEntry) === currentString) return prev;
+
+        const newHistory = [...sliced, JSON.parse(currentString)];
+        if (newHistory.length > 50) newHistory.shift();
+        setHistoryIndex(newHistory.length - 1);
+        return newHistory;
+      });
+    }, 500); // Debounce history saves
+
+    return () => clearTimeout(timeout);
+  }, [docData, loading]);
+
+  const undo = useCallback(() => {
+    if (historyIndex > 0) {
+      const prevIndex = historyIndex - 1;
+      const prevState = history[prevIndex];
+      isInternalUpdate.current = true;
+      setDocData(JSON.parse(JSON.stringify(prevState)));
+      setHistoryIndex(prevIndex);
+    }
+  }, [history, historyIndex]);
+
+  const redo = useCallback(() => {
+    if (historyIndex < history.length - 1) {
+      const nextIndex = historyIndex + 1;
+      const nextState = history[nextIndex];
+      isInternalUpdate.current = true;
+      setDocData(JSON.parse(JSON.stringify(nextState)));
+      setHistoryIndex(nextIndex);
+    }
+  }, [history, historyIndex]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        if (e.shiftKey) {
+          e.preventDefault();
+          redo();
+        } else {
+          e.preventDefault();
+          undo();
+        }
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [undo, redo]);
 
   const handleManualSave = async () => {
     if (!docData || loading) return;
@@ -376,6 +454,26 @@ const PBLModuleEditor: React.FC<PBLModuleEditorProps> = ({ userStats, docId, onB
           >
             {['14px', '16px', '18px', '20px', '24px', '32px'].map(s => <option key={s} value={s}>{s}</option>)}
           </select>
+
+          <div className="w-[1px] h-6 bg-slate-100 dark:bg-slate-800 mx-2 shrink-0" />
+
+          {/* History */}
+          <div className="flex items-center gap-0.5 shrink-0">
+             <ToolbarButton 
+               icon={<Undo size={16} />} 
+               title="Desfazer (Ctrl+Z)" 
+               onClick={undo} 
+               active={historyIndex > 0}
+               className={historyIndex <= 0 ? 'opacity-30 pointer-events-none' : ''}
+              />
+             <ToolbarButton 
+               icon={<Redo size={16} />} 
+               title="Refazer (Ctrl+Y)" 
+               onClick={redo} 
+               active={historyIndex < history.length - 1}
+               className={historyIndex >= history.length - 1 ? 'opacity-30 pointer-events-none' : ''}
+             />
+          </div>
 
           <div className="w-[1px] h-6 bg-slate-100 dark:bg-slate-800 mx-2 shrink-0" />
 
@@ -646,10 +744,16 @@ const PBLModuleEditor: React.FC<PBLModuleEditorProps> = ({ userStats, docId, onB
   );
 };
 
-const ToolbarButton: React.FC<{ icon: any; title: string; active?: boolean; onClick?: () => void }> = ({ icon, title, active, onClick }) => (
+const ToolbarButton: React.FC<{ 
+  icon: any; 
+  title: string; 
+  active?: boolean; 
+  onClick?: () => void;
+  className?: string;
+}> = ({ icon, title, active, onClick, className }) => (
   <button 
     onClick={onClick}
-    className={`p-2 rounded-lg transition-all relative group ${active ? 'bg-purple-100 text-purple-600' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+    className={`p-2 rounded-lg transition-all relative group ${active ? 'bg-purple-100 text-purple-600' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'} ${className || ''}`}
   >
      {icon}
      <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-900 text-[10px] text-white rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[1000]">

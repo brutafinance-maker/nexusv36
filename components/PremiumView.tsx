@@ -72,8 +72,67 @@ const SPECIALTY_THEMES: Record<string, { img: string; icon: string; accent: stri
   "Reprodução Humana": { 
     img: "https://images.unsplash.com/photo-1579152276508-498c8c22252a?auto=format&fit=crop&q=80&w=800",
     icon: "🧬", accent: "#F43F5E", desc: "Gametogênese e fertilização.", gradient: "from-rose-500 to-pink-400"
+  },
+  "Articulações": { 
+    img: "https://images.unsplash.com/photo-1530210124550-912dc1381cb8?auto=format&fit=crop&q=80&w=800",
+    icon: "🦴", accent: "#F59E0B", desc: "Módulo 4 — Estudo aprofundado das articulações e seus sistemas.", gradient: "from-amber-600 to-yellow-400"
   }
 };
+
+const MEDCURSO_LESSONS: (VideoLesson & { duration: string; block: string })[] = []; // Placeholder or same as above
+
+const ANATOMYFLIX_LESSONS: (VideoLesson & { duration: string; block: string })[] = [
+  { id: 't_FJ8xu3utw', title: 'anatomiafacil 1 Hotmart Club', duration: '16:05', block: '📦 Módulo 4 — Articulações' },
+  { id: 'I02cMuwqdgg', title: 'anatomiafacil 2 Hotmart Club', duration: '4:49', block: '📦 Módulo 4 — Articulações' },
+  { id: 'iXU-ZFQwe24', title: 'anatomiafacil 3 Hotmart Club', duration: '18:52', block: '📦 Módulo 4 — Articulações' },
+  { id: 'l7f0-zzY18w', title: 'anatomiafacil 4 Hotmart Club', duration: '13:38', block: '📦 Módulo 4 — Articulações' },
+  { id: 'Khy12Ndb5fE', title: 'anatomiafacil 5 Hotmart Club', duration: '11:27', block: '📦 Módulo 4 — Articulações' },
+  { id: 'vOBoirvTh_M', title: 'anatomiafacil 6 Hotmart Club', duration: '15:02', block: '📦 Módulo 4 — Articulações' },
+  { id: 'OPhb3GKNV70', title: 'anatomiafacil 7 Hotmart Club', duration: '7:47', block: '📦 Módulo 4 — Articulações' },
+  { id: 'r0_mmTVVewk', title: 'anatomiafacil 8 Hotmart Club', duration: '6:18', block: '📦 Módulo 4 — Articulações' },
+  { id: 'v_j8g-1zgpI', title: 'anatomiafacil 9 Hotmart Club', duration: '7:35', block: '📦 Módulo 4 — Articulações' },
+  { id: '1RbE3Bh5FgI', title: 'anatomiafacil 10 Hotmart Club', duration: '8:15', block: '📦 Módulo 4 — Articulações' },
+  { id: 'HnTgbygdGvU', title: 'anatomiafacil 11 Hotmart Club', duration: '6:58', block: '📦 Módulo 4 — Articulações' },
+  { id: 'vh9cXNrXN2U', title: 'anatomiafacil 12 Hotmart Club', duration: '10:50', block: '📦 Módulo 4 — Articulações' },
+  { id: 'EmuSZinxXhk', title: 'anatomiafacil 13 Hotmart Club', duration: '19:14', block: '📦 Módulo 4 — Articulações' },
+  { id: 'vjSorzSJGpg', title: 'anatomiafacil 14 Hotmart Club', duration: '17:40', block: '📦 Módulo 4 — Articulações' },
+  { id: '-VZNmVFeGuQ', title: 'anatomiafacil 15 Hotmart Club', duration: '12:25', block: '📦 Módulo 4 — Articulações' },
+  { id: 'y7OCcGfXoNg', title: 'anatomiafacil 16 Hotmart Club', duration: '30:49', block: '📦 Módulo 4 — Articulações' },
+  { id: '1Ik1tsKiekA', title: 'anatomiafacil 17 Hotmart Club', duration: '15:49', block: '📦 Módulo 4 — Articulações' },
+  { id: 'AAX3QJhj4LM', title: 'anatomiafacil 18 Hotmart Club', duration: '22:38', block: '📦 Módulo 4 — Articulações' },
+  { id: 'gVsvt__iIRg', title: 'anatomiafacil 19 Hotmart Club', duration: '32:01', block: '📦 Módulo 4 — Articulações' },
+  { id: 'RqqnZrGKpBQ', title: 'anatomiafacil 20 Hotmart Club', duration: '13:46', block: '📦 Módulo 4 — Articulações' },
+  { id: 'f0Ysfgi5f1g', title: 'anatomiafacil 21 Hotmart Club', duration: '11:32', block: '📦 Módulo 4 — Articulações' },
+  { id: '2et1Q6XPzi8', title: 'anatomiafacil 22 Hotmart Club', duration: '6:37', block: '📦 Módulo 4 — Articulações' },
+  { id: 'ciNPhcJl3Yk', title: 'anatomiafacil 23 Hotmart Club', duration: '38:40', block: '📦 Módulo 4 — Articulações' },
+  { id: '8qIQSYJCJ80', title: 'anatomiafacil 24 Hotmart Club', duration: '7:52', block: '📦 Módulo 4 — Articulações' },
+  { id: 'Ry_a1bKyET0', title: 'anatomiafacil 25 Hotmart Club', duration: '12:30', block: '📦 Módulo 4 — Articulações' },
+  { id: '-N6I4Hz_roE', title: 'anatomiafacil 26 Hotmart Club', duration: '6:09', block: '📦 Módulo 4 — Articulações' },
+  { id: '_kDP17_w_hU', title: 'anatomiafacil 27 Hotmart Club', duration: '8:21', block: '📦 Módulo 4 — Articulações' },
+  { id: '7AHqGcV7UgA', title: 'anatomiafacil 28 Hotmart Club', duration: '8:38', block: '📦 Módulo 4 — Articulações' },
+  { id: 'f3pMCG38KYI', title: 'anatomiafacil 29 Hotmart Club', duration: '7:03', block: '📦 Módulo 4 — Articulações' },
+  { id: '3RsG75QAMzQ', title: 'anatomiafacil 30 Hotmart Club', duration: '7:34', block: '📦 Módulo 4 — Articulações' },
+  { id: 'jSMblkKBrHs', title: 'anatomiafacil 31 Hotmart Club', duration: '28:39', block: '📦 Módulo 4 — Articulações' },
+  { id: 'YtYlDBw7-6M', title: 'anatomiafacil 32 Hotmart Club', duration: '9:06', block: '📦 Módulo 4 — Articulações' },
+  { id: 'pfNxxPaTgck', title: 'anatomiafacil 33 Hotmart Club', duration: '8:07', block: '📦 Módulo 4 — Articulações' },
+  { id: 'r7a34Y0V_nQ', title: 'anatomiafacil 34 Hotmart Club', duration: '13:32', block: '📦 Módulo 4 — Articulações' },
+  { id: 'H6r_2E1lJXg', title: 'anatomiafacil 35 Hotmart Club', duration: '14:10', block: '📦 Módulo 4 — Articulações' },
+  { id: 'SQC3Xh0K7uc', title: 'anatomiafacil 36 Hotmart Club', duration: '30:54', block: '📦 Módulo 4 — Articulações' },
+  { id: 'k-043bRt5r8', title: 'anatomiafacil 37 Hotmart Club', duration: '19:02', block: '📦 Módulo 4 — Articulações' },
+  { id: 's8R94GLwHh8', title: 'anatomiafacil 38 Hotmart Club', duration: '15:44', block: '📦 Módulo 4 — Articulações' },
+  { id: 'imZQTuy1zrk', title: 'anatomiafacil 39 Hotmart Club', duration: '10:04', block: '📦 Módulo 4 — Articulações' },
+  { id: 'roeibkZQuP4', title: 'anatomiafacil 40 Hotmart Club', duration: '26:19', block: '📦 Módulo 4 — Articulações' },
+  { id: 'vntVjx11I1I', title: 'anatomiafacil 41 Hotmart Club', duration: '17:58', block: '📦 Módulo 4 — Articulações' },
+  { id: 'LO0GHEA7Cts', title: 'anatomiafacil 42 Hotmart Club', duration: '16:47', block: '📦 Módulo 4 — Articulações' },
+  { id: 'IswLtoZwIxk', title: 'anatomiafacil 43 Hotmart Club', duration: '12:57', block: '📦 Módulo 4 — Articulações' },
+  { id: 'tgoHcGknsSU', title: 'anatomiafacil 44 Hotmart Club', duration: '8:26', block: '📦 Módulo 4 — Articulações' },
+  { id: 'Ygn_WOuf3do', title: 'anatomiafacil 45 Hotmart Club', duration: '9:07', block: '📦 Módulo 4 — Articulações' },
+  { id: 'KRdol4iPgo4', title: 'anatomiafacil 46 Hotmart Club', duration: '9:19', block: '📦 Módulo 4 — Articulações' },
+  { id: 'fDaJbzIPM4Y', title: 'anatomiafacil 47 Hotmart Club', duration: '4:12', block: '📦 Módulo 4 — Articulações' },
+  { id: 'ZzsPJGvG_Og', title: 'anatomiafacil 48 Hotmart Club', duration: '6:13', block: '📦 Módulo 4 — Articulações' },
+  { id: 'O_Gfo4EA4hA', title: 'anatomiafacil 49 Hotmart Club', duration: '3:39', block: '📦 Módulo 4 — Articulações' },
+  { id: 'sKV5moQ3rnM', title: 'anatomiafacil 50 Hotmart Club', duration: '42:57', block: '📦 Módulo 4 — Articulações' },
+];
 
 const HEMATOLOGIA_LESSONS: (VideoLesson & { duration: string; block: string })[] = [
   { id: 'ihsoMziMuQk', title: 'Abordagem Inicial da Anemia', duration: '18:40', block: '🔴 HEMATOLOGIA I — ANEMIAS' },
@@ -200,12 +259,14 @@ const SANARFLIX_COURSES = [
 const VEST_COURSES = [ "Reprodução Humana", "Embriologia Animal" ];
 const MEDCOF_COURSES = [ "Extensivo", "Curso de Ultrassom – POCUS", "Desafios de Imagem", "Estações Multimídia", "Hands On – OSCE", "Medical Life Hacks", "RX" ];
 const MEDCURSO_COURSES = [ "Pediatria", "Ginecologia e Obstetrícia", "Cirurgia", "Clínica Médica", "Hematologia", "Preventiva" ];
+const ANATOMYFLIX_COURSES = [ "Articulações" ];
 
 const PREMIUM_PLATFORMS = [
   { id: 'sanarflix', title: 'Sanarflix', category: 'official', description: 'Plataforma oficial Sanarflix.', image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=600' },
   { id: 'medcurso', title: 'Medcurso', category: 'official', description: 'Preparatório para Residência Médica.', image: 'https://medgrupo.com.br/wp-content/uploads/2024/03/medgrupo.png' },
   { id: 'medcof', title: 'MedCof', category: 'official', description: 'Elite em aprovação na residência médica.', image: 'https://www.grupomedcof.com.br/blog/wp-content/uploads/2024/10/Modelo-instituicoes-16.png' },
   { id: 'devoltavest', title: 'De Volta ao Vest', category: 'foundation', description: 'Fundamentos do vestibular.', image: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&q=80&w=600' },
+  { id: 'anatomyflix', title: 'Anatomyflix', category: 'anatomy', description: 'O streaming da Anatomia Humana.', image: 'https://anatomyflix.anatomiafacil.com.br/wp-content/uploads/2024/03/Logo-Anatomyflix.png' },
 ];
 
 const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onAwardPoints, onIncrementUsage, onNavigate }) => {
@@ -218,6 +279,50 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
   
   const videoRef = useRef<HTMLIFrameElement>(null);
   const watchedVideos = userStats.watchedLessons || [];
+
+  // Determine Featured Content (Dynamic Hero)
+  const featuredContent = useMemo(() => {
+    const allCourses = [
+      { name: 'Hematologia', lessons: HEMATOLOGIA_LESSONS },
+      { name: 'Pediatria', lessons: [...PEDIATRIA_1_LESSONS, ...PEDIATRIA_2_LESSONS, ...PEDIATRIA_3_LESSONS] },
+      { name: 'Embriologia', lessons: EMBRIOLOGIA_LESSONS },
+      { name: 'Reprodução Humana', lessons: REPRODUCAO_HUMANA_LESSONS },
+      { name: 'Articulações', lessons: ANATOMYFLIX_LESSONS }
+    ];
+
+    // Count watched lessons per course
+    const courseStats = allCourses.map(course => ({
+      ...course,
+      watchedCount: course.lessons.filter(l => watchedVideos.includes(l.id)).length
+    }));
+
+    // Find course with most watched lessons
+    const topCourse = courseStats.reduce((prev, current) => 
+      (current.watchedCount > prev.watchedCount) ? current : prev
+    , courseStats[0]);
+
+    // If no lessons watched, use default (Hematologia) or lastWatched if available
+    let finalCourse = topCourse;
+    if (topCourse.watchedCount === 0 && userStats.lastWatched?.courseName) {
+      const lastCourse = allCourses.find(c => c.name === userStats.lastWatched?.courseName);
+      if (lastCourse) finalCourse = { ...lastCourse, watchedCount: 1 };
+    }
+
+    const theme = SPECIALTY_THEMES[finalCourse.name];
+    const finalTheme = theme || SPECIALTY_THEMES["Clínica Médica"];
+    
+    // Find first unwatched lesson of the top course
+    const nextLesson = finalCourse.lessons.find(l => !watchedVideos.includes(l.id)) || finalCourse.lessons[0];
+
+    return {
+      courseName: finalCourse.name,
+      lesson: nextLesson,
+      theme: finalTheme,
+      hasTheme: !!theme,
+      thumbnail: `https://img.youtube.com/vi/${nextLesson.id}/maxresdefault.jpg`,
+      platformId: finalCourse.name === 'Embriologia' || finalCourse.name === 'Reprodução Humana' ? 'devoltavest' : (finalCourse.name === 'Articulações' ? 'anatomyflix' : 'medcurso')
+    };
+  }, [watchedVideos, userStats.lastWatched]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -248,7 +353,8 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
       ...PEDIATRIA_1_LESSONS.map(l => ({ ...l, origin: 'Pediatria 1' })),
       ...PEDIATRIA_2_LESSONS.map(l => ({ ...l, origin: 'Pediatria 2' })),
       ...PEDIATRIA_3_LESSONS.map(l => ({ ...l, origin: 'Pediatria 3' })),
-      ...HEMATOLOGIA_LESSONS.map(l => ({ ...l, origin: 'Hematologia' }))
+      ...HEMATOLOGIA_LESSONS.map(l => ({ ...l, origin: 'Hematologia' })),
+      ...ANATOMYFLIX_LESSONS.map(l => ({ ...l, origin: 'Articulações' }))
     ];
 
     allLessons.forEach(l => {
@@ -319,6 +425,7 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
       return PEDIATRIA_1_LESSONS; // Default
     }
     if (course === 'Hematologia') return HEMATOLOGIA_LESSONS;
+    if (course === 'Articulações') return ANATOMYFLIX_LESSONS;
     return [{ id: 'dQw4w9WgXcQ', title: `Aula 01: Introdução a ${course}`, duration: '15:00' }];
   };
 
@@ -327,6 +434,7 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
     if (selectedPlatform === 'devoltavest') return VEST_COURSES;
     if (selectedPlatform === 'medcof') return MEDCOF_COURSES;
     if (selectedPlatform === 'medcurso') return MEDCURSO_COURSES;
+    if (selectedPlatform === 'anatomyflix') return ANATOMYFLIX_COURSES;
     return [];
   }, [selectedPlatform]);
 
@@ -783,6 +891,13 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
           </div>
 
           <div className="flex items-center gap-4 pl-4 border-l border-white/10">
+            <button
+              onClick={() => onNavigate?.('inicio')}
+              className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all group"
+              title="Sair do Premium"
+            >
+              <X size={20} className="group-hover:rotate-90 transition-transform duration-300" />
+            </button>
             <div className="hidden sm:block text-right">
               <p className="text-[10px] font-black text-white italic truncate max-w-[100px] leading-none mb-1">{userStats.name || 'Estudante'}</p>
               <div className="flex items-center justify-end gap-1">
@@ -882,12 +997,19 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
         </div>
       ) : (
         <>
-          <section className="relative w-full h-[70vh] md:h-[85vh] overflow-hidden">
+      <section className="relative w-full h-[70vh] md:h-[85vh] overflow-hidden">
         <div className="absolute inset-0">
           <img 
-            src="https://images.unsplash.com/photo-1631815587646-b85a1bb027e1?auto=format&fit=crop&q=80&w=1600" 
+            src={featuredContent.hasTheme ? featuredContent.theme.img : featuredContent.thumbnail} 
             alt="Hero Background" 
             className="w-full h-full object-cover"
+            onError={(e) => {
+              // Fallback if maxresdefault doesn't exist
+              const target = e.target as HTMLImageElement;
+              if (target.src !== `https://img.youtube.com/vi/${featuredContent.lesson.id}/hqdefault.jpg`) {
+                target.src = `https://img.youtube.com/vi/${featuredContent.lesson.id}/hqdefault.jpg`;
+              }
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120] via-[#0B1120]/40 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0B1120] via-transparent to-transparent" />
@@ -899,7 +1021,7 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center gap-2 text-[#3B82F6] font-black text-[10px] md:text-xs uppercase tracking-[0.3em] bg-[#3B82F6]/10 w-fit px-4 py-1.5 rounded-full border border-[#3B82F6]/20"
           >
-            <TrendingUp size={14} /> Destaque da Semana
+            <TrendingUp size={14} /> Recomendado para Você
           </motion.div>
           
           <motion.h1 
@@ -908,7 +1030,7 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
             transition={{ delay: 0.1 }}
             className="text-4xl md:text-8xl font-black italic tracking-tighter"
           >
-            Anemia de Doença Crônica
+            {featuredContent.lesson.title}
           </motion.h1>
           
           <motion.p 
@@ -917,7 +1039,7 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
             transition={{ delay: 0.2 }}
             className="text-[#9CA3AF] text-lg md:text-2xl font-medium max-w-3xl leading-relaxed"
           >
-            Hematologia • Aprenda a diferenciar as anemias microcíticas com foco em ferritina e transferrina. O tema mais cobrado em provas.
+            {featuredContent.courseName} • {(featuredContent.lesson as any).block || 'Módulo Completo'} • {featuredContent.theme.desc}
           </motion.p>
           
           <motion.div 
@@ -928,16 +1050,22 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
           >
             <button 
               onClick={() => {
-                setSelectedPlatform('medcurso');
-                setSelectedCourse('Hematologia');
-                handleLessonSelect(HEMATOLOGIA_LESSONS[1], 'Hematologia');
+                setSelectedPlatform(featuredContent.platformId);
+                setSelectedCourse(featuredContent.courseName);
+                handleLessonSelect(featuredContent.lesson, featuredContent.courseName);
               }}
               className="bg-[#3B82F6] hover:bg-[#2563EB] text-white px-10 md:px-14 py-4 md:py-5 rounded-2xl font-black text-xs md:text-sm uppercase tracking-widest flex items-center gap-4 transition-all shadow-2xl hover:scale-105 active:scale-95"
             >
-              <Play size={20} fill="currentColor" className="ml-1" /> Continuar Assistindo
+              <Play size={20} fill="currentColor" className="ml-1" /> {watchedVideos.includes(featuredContent.lesson.id) ? 'Reassistir Aula' : 'Assistir Agora'}
             </button>
-            <button className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-10 py-4 md:py-5 rounded-2xl font-black text-xs md:text-sm uppercase tracking-widest flex items-center gap-4 transition-all border border-white/10">
-              <Info size={20} /> Ver Detalhes
+            <button 
+              onClick={() => {
+                setSelectedPlatform(featuredContent.platformId);
+                setSelectedCourse(featuredContent.courseName);
+              }}
+              className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-10 py-4 md:py-5 rounded-2xl font-black text-xs md:text-sm uppercase tracking-widest flex items-center gap-4 transition-all border border-white/10"
+            >
+              <Info size={20} /> Ver Módulo
             </button>
           </motion.div>
         </div>
@@ -1065,6 +1193,50 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
                   <div className="flex items-center gap-4 mt-3">
                      <span className="text-[10px] font-black text-[#9CA3AF] uppercase tracking-widest">AULA HD</span>
                      <span className="text-[10px] font-black text-blue-500/80 uppercase">KIDS MASTER</span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* Anatomyflix Lane */}
+        <section>
+          <h3 className="text-xl md:text-3xl font-black text-white mb-8 italic flex items-center gap-4">
+            Assista no <span className="text-amber-500">Anatomyflix</span> <div className="h-px flex-grow bg-amber-500/20" />
+          </h3>
+          <div className="flex gap-6 overflow-x-auto no-scrollbar pb-10 -mx-8 px-8">
+            {ANATOMYFLIX_LESSONS.map((lesson) => (
+              <motion.div 
+                key={lesson.id} 
+                whileHover={{ scale: 1.05 }}
+                onClick={() => {
+                   setSelectedPlatform('anatomyflix');
+                   setSelectedCourse('Articulações');
+                   handleLessonSelect(lesson, 'Articulações');
+                }}
+                className="flex-none w-[240px] md:w-[320px] bg-[#111827] rounded-[2rem] overflow-hidden cursor-pointer relative group shadow-xl border border-white/5"
+              >
+                <div className="aspect-[16/10] bg-[#1F2937] relative">
+                   <img 
+                    src={`https://img.youtube.com/vi/${lesson.id}/mqdefault.jpg`}
+                    className="w-full h-full object-cover opacity-80"
+                    referrerPolicy="no-referrer"
+                    alt={lesson.title}
+                   />
+                   <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
+                   <div className="absolute top-4 right-4 px-3 py-1 rounded-lg bg-black/60 text-[10px] font-black text-white backdrop-blur-md">
+                      {lesson.duration}
+                   </div>
+                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <PlayCircle className="text-white w-12 h-12" />
+                   </div>
+                </div>
+                <div className="p-6">
+                  <h5 className="text-sm font-black text-[#E5E7EB] line-clamp-1 group-hover:text-amber-500 transition-colors">{lesson.title}</h5>
+                  <div className="flex items-center gap-4 mt-3">
+                     <span className="text-[10px] font-black text-[#9CA3AF] uppercase tracking-widest">AULA HD</span>
+                     <span className="text-[10px] font-black text-amber-500/80 uppercase">ARTICULAÇÕES</span>
                   </div>
                 </div>
               </motion.div>

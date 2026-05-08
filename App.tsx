@@ -32,6 +32,29 @@ const App: React.FC = () => {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   
+  const isNavigating = useRef(false);
+
+  useEffect(() => {
+    // Initial state
+    window.history.replaceState({ view: 'inicio' }, '', '');
+    
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state && event.state.view) {
+        isNavigating.current = true;
+        setView(event.state.view);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const navigateTo = (newView: typeof view) => {
+    if (newView !== view) {
+      window.history.pushState({ view: newView }, '', '');
+      setView(newView);
+    }
+  };
+
   const [userStats, setUserStats] = useState<UserStats>({
     displayName: '',
     totalAnswered: 0,
@@ -176,7 +199,7 @@ const App: React.FC = () => {
       {user && !isAnamneseModelActive && view !== 'premium' && (
         <Header 
           currentView={view} 
-          onNavigate={setView} 
+          onNavigate={navigateTo} 
           userStats={userStats} 
           onOpenProfile={() => setProfileMenuOpen(true)}
           onToggleChat={() => setChatOpen(!chatOpen)}
@@ -188,20 +211,20 @@ const App: React.FC = () => {
         isOpen={profileMenuOpen} 
         onClose={() => setProfileMenuOpen(false)} 
         userStats={userStats} 
-        onNavigateAdmin={() => setView('admin')}
+        onNavigateAdmin={() => navigateTo('admin')}
       />
 
       <ChatSidebar isOpen={chatOpen} onClose={() => setChatOpen(false)} userStats={userStats} />
       
       <main className={`${view === 'premium' ? 'w-full flex-grow' : 'max-w-[1400px] mx-auto pb-20 px-4 md:px-8 w-full flex-grow'} ${isAnamneseModelActive ? 'pt-0' : ''}`}>
-        {view === 'inicio' ? <StatsDashboard stats={userStats} allUsers={allUsersRanking} onNavigate={setView} onSyncPoints={syncPoints} /> : (
+        {view === 'inicio' ? <StatsDashboard stats={userStats} allUsers={allUsersRanking} onNavigate={navigateTo} onSyncPoints={syncPoints} /> : (
           <div className={isAnamneseModelActive || view === 'premium' ? 'pt-0' : 'pt-8'}>
             {view === 'pbl' && <PBLView userStats={userStats} onAddActivity={addActivity} onSyncPoints={syncPoints} onAwardPoints={syncPoints} />}
-            {view === 'pbl-digital' && <PBLDigital userStats={userStats} onSyncPoints={syncPoints} onClose={() => setView('inicio')} />}
+            {view === 'pbl-digital' && <PBLDigital userStats={userStats} onSyncPoints={syncPoints} onClose={() => navigateTo('inicio')} />}
             {view === 'ct' && <TrainingCenterView onAnswer={handleAnswerQuestion} />}
             {view === 'morfo' && <MorfoView userStats={userStats} onAddActivity={addActivity} />}
             {view === 'hp' && <HPView isPremium={userStats.isPremium} onAddActivity={addActivity} userStats={userStats} />}
-            {view === 'premium' && <PremiumView userStats={userStats} onAddActivity={addActivity} onAwardPoints={syncPoints} onNavigate={setView} />}
+            {view === 'premium' && <PremiumView userStats={userStats} onAddActivity={addActivity} onAwardPoints={syncPoints} onNavigate={navigateTo} />}
             {view === 'manuais' && <ManualsView userStats={userStats} onAddActivity={addActivity} />}
             {view === 'biblioteca' && <LibraryView />}
             {view === 'admin' && <AdminView userStats={userStats} />}
