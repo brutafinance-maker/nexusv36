@@ -22,6 +22,8 @@ import {
   LogOut
 } from 'lucide-react';
 import NexusVideoPlayer from './NexusVideoPlayer';
+import JalekoView from './JalekoView';
+import MeSalvaView from './MeSalvaView';
 
 interface PremiumViewProps {
   userStats: UserStats;
@@ -267,6 +269,8 @@ const PREMIUM_PLATFORMS = [
   { id: 'medcof', title: 'MedCof', category: 'official', description: 'Elite em aprovação na residência médica.', image: 'https://www.grupomedcof.com.br/blog/wp-content/uploads/2024/10/Modelo-instituicoes-16.png' },
   { id: 'devoltavest', title: 'De Volta ao Vest', category: 'foundation', description: 'Fundamentos do vestibular.', image: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&q=80&w=600' },
   { id: 'anatomyflix', title: 'Anatomyflix', category: 'anatomy', description: 'O streaming da Anatomia Humana.', image: 'https://anatomyflix.anatomiafacil.com.br/wp-content/uploads/2024/03/Logo-Anatomyflix.png' },
+  { id: 'jaleko', title: 'Jaleko Artmed', category: 'official', description: 'Cursos médicos de alto padrão.', image: 'https://images.unsplash.com/photo-1576091160399-112521d4183a?auto=format&fit=crop&q=80&w=800' },
+  { id: 'mesalva', title: 'Me Salva!', category: 'prep', description: 'A maior plataforma de educação online.', image: 'https://raw.githubusercontent.com/samielabud-ui/nexus-capas/main/MjAyMi0xMC0xMyAxOTo0NzoxNCArMDAwMDg2MDk1OA%3D%3D_0A.png' },
 ];
 
 const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onAwardPoints, onIncrementUsage, onNavigate }) => {
@@ -274,6 +278,7 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
   const [selectedSubCourse, setSelectedSubCourse] = useState<string | null>(null);
   const [activeVideo, setActiveVideo] = useState<VideoLesson | null>(null);
+  const [customPlaylist, setCustomPlaylist] = useState<VideoLesson[] | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
   
@@ -334,7 +339,7 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
     if (!searchTerm.trim()) return null;
     const term = searchTerm.toLowerCase();
     
-    const results: { type: 'course' | 'lesson' | 'platform', title: string, platform?: string, data: any }[] = [];
+    const results: { type: 'course' | 'lesson' | 'platform' | 'folder', title: string, platform?: string, course?: string, data: any }[] = [];
     
     PREMIUM_PLATFORMS.forEach(p => {
       if (p.title.toLowerCase().includes(term)) results.push({ type: 'platform', title: p.title, data: p });
@@ -347,19 +352,45 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
       if (c.toLowerCase().includes(term)) results.push({ type: 'course', title: c, platform: 'Sanarflix', data: c });
     });
 
+    // Jaleko specific folders (manually added for search)
+    const JALEKO_SEARCHABLE_FOLDERS = [
+      { id: 'anatomia', title: 'Anatomia', platform: 'Jaleko Artmed' },
+      { id: 'sistema-locomotor', title: 'Sistema Locomotor', platform: 'Jaleko Artmed', course: 'Anatomia' },
+      { id: 'articulacoes', title: 'Articulações', platform: 'Jaleko Artmed', course: 'Sistema Locomotor' },
+      { id: 'playlist-intro-art', title: 'Introdução às Articulações', platform: 'Jaleko Artmed', course: 'Articulações' },
+      { id: 'playlist-art-especiais', title: 'Articulações Especiais', platform: 'Jaleko Artmed', course: 'Articulações' }
+    ];
+
+    const MESALVA_SEARCHABLE_FOLDERS = [
+      { id: 'anatomia', title: 'Anatomia', platform: 'Me Salva!' },
+      { id: 'articulacoes', title: 'Articulações', platform: 'Me Salva!', course: 'Anatomia' }
+    ];
+
+    JALEKO_SEARCHABLE_FOLDERS.forEach(f => {
+      if (f.title.toLowerCase().includes(term)) {
+        results.push({ type: 'folder', title: f.title, platform: f.platform, course: f.course, data: { ...f, id: 'jaleko' } });
+      }
+    });
+
+    MESALVA_SEARCHABLE_FOLDERS.forEach(f => {
+      if (f.title.toLowerCase().includes(term)) {
+        results.push({ type: 'folder', title: f.title, platform: f.platform, course: f.course, data: { ...f, id: 'mesalva' } });
+      }
+    });
+
     const allLessons = [
-      ...EMBRIOLOGIA_LESSONS.map(l => ({ ...l, origin: 'Embriologia' })),
-      ...REPRODUCAO_HUMANA_LESSONS.map(l => ({ ...l, origin: 'Reprodução' })),
-      ...PEDIATRIA_1_LESSONS.map(l => ({ ...l, origin: 'Pediatria 1' })),
-      ...PEDIATRIA_2_LESSONS.map(l => ({ ...l, origin: 'Pediatria 2' })),
-      ...PEDIATRIA_3_LESSONS.map(l => ({ ...l, origin: 'Pediatria 3' })),
-      ...HEMATOLOGIA_LESSONS.map(l => ({ ...l, origin: 'Hematologia' })),
-      ...ANATOMYFLIX_LESSONS.map(l => ({ ...l, origin: 'Articulações' }))
+      ...EMBRIOLOGIA_LESSONS.map(l => ({ ...l, origin: 'Embriologia', platform: 'De Volta ao Vest' })),
+      ...REPRODUCAO_HUMANA_LESSONS.map(l => ({ ...l, origin: 'Reprodução Humana', platform: 'De Volta ao Vest' })),
+      ...PEDIATRIA_1_LESSONS.map(l => ({ ...l, origin: 'Pediatria 1', platform: 'Medcurso' })),
+      ...PEDIATRIA_2_LESSONS.map(l => ({ ...l, origin: 'Pediatria 2', platform: 'Medcurso' })),
+      ...PEDIATRIA_3_LESSONS.map(l => ({ ...l, origin: 'Pediatria 3', platform: 'Medcurso' })),
+      ...HEMATOLOGIA_LESSONS.map(l => ({ ...l, origin: 'Hematologia', platform: 'Medcurso' })),
+      ...ANATOMYFLIX_LESSONS.map(l => ({ ...l, origin: 'Articulações', platform: 'Anatomyflix' }))
     ];
 
     allLessons.forEach(l => {
       if (l.title.toLowerCase().includes(term)) {
-        results.push({ type: 'lesson', title: l.title, platform: l.origin, data: l });
+        results.push({ type: 'lesson', title: l.title, platform: l.platform, course: l.origin, data: l });
       }
     });
 
@@ -398,9 +429,16 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
     return (userStats.openedContentIds?.length || 0) >= 10;
   };
 
-  const handleLessonSelect = async (lesson: VideoLesson, courseName?: string) => {
+  const handleLessonSelect = async (lesson: VideoLesson, courseName?: string, playlist?: VideoLesson[]) => {
     const contentId = `aula_${lesson.id}`;
     const course = courseName || selectedCourse;
+
+    if (playlist) {
+      setCustomPlaylist(playlist);
+    } else if (!activeVideo) {
+      setCustomPlaylist(null);
+    }
+
     if (isOverLimit(contentId)) { setActiveVideo(lesson); return; }
     setActiveVideo(lesson);
     if ((!userStats.isPremium && !userStats.adm) || !auth.currentUser) { onIncrementUsage?.(contentId); return; }
@@ -439,8 +477,9 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
   }, [selectedPlatform]);
 
   const filteredLessons = useMemo(() => {
+    if (customPlaylist) return customPlaylist;
     return getLessonsForCourse(selectedCourse || '', selectedSubCourse || undefined);
-  }, [selectedCourse, selectedSubCourse]);
+  }, [selectedCourse, selectedSubCourse, customPlaylist]);
 
   if (!userStats.isPremium && !userStats.adm) {
     return (
@@ -506,32 +545,32 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
               />
             </div>
 
-            <div className="w-full max-w-[1400px] mt-12 pb-20">
-              <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-8 pb-10 border-b border-white/10">
-                <div className="space-y-4">
+            <div className="w-full max-w-[1400px] mt-4 pb-20">
+              <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-4 pb-6 border-b border-white/10">
+                <div className="space-y-2">
                   <div className="flex items-center gap-4">
-                    <span className="px-3 py-1 bg-[#3B82F6]/10 text-[#3B82F6] text-[9px] font-black uppercase tracking-widest rounded-md border border-[#3B82F6]/20">4K ULTRA HD</span>
+                    <span className="px-3 py-1 bg-[#3B82F6]/10 text-[#3B82F6] text-[8px] font-black uppercase tracking-widest rounded-md border border-[#3B82F6]/20">4K ULTRA HD</span>
                     <span className="text-[10px] font-black text-[#9CA3AF] uppercase tracking-widest flex items-center gap-2">
                        <Clock size={12} /> {(activeVideo as any).duration || '12:00'}
                     </span>
                   </div>
-                  <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter italic">{activeVideo.title}</h1>
+                  <h1 className="text-2xl md:text-4xl font-black text-white tracking-tighter italic">{activeVideo.title}</h1>
                 </div>
                 
                 <div className="flex items-center gap-4">
                   <button 
                     onClick={() => markAsWatched(activeVideo.id)} 
-                    className={`flex items-center justify-center gap-3 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-2xl hover:scale-105 active:scale-95 ${
+                    className={`flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-2xl hover:scale-105 active:scale-95 ${
                       isCompleted 
                         ? 'bg-green-500/10 text-green-500 border border-green-500/20' 
                         : 'bg-white text-black hover:bg-neutral-200'
                     }`}
                   >
-                    {isCompleted ? <CheckCircle2 size={18} /> : <Play size={18} fill="currentColor" />}
+                    {isCompleted ? <CheckCircle2 size={16} /> : <Play size={16} fill="currentColor" />}
                     {isCompleted ? 'Concluído' : 'Marcar Concluída'}
                   </button>
-                  <button className="w-14 h-14 rounded-2xl bg-white/5 hover:bg-white/10 text-white flex items-center justify-center border border-white/10 transition-all">
-                     <Star size={20} />
+                  <button className="w-12 h-12 rounded-2xl bg-white/5 hover:bg-white/10 text-white flex items-center justify-center border border-white/10 transition-all">
+                     <Star size={18} />
                   </button>
                 </div>
               </div>
@@ -650,6 +689,26 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
   }
 
   // --- VISTA PRINCIPAL (STREAMING STYLE) ---
+  if (selectedPlatform === 'jaleko') {
+    return (
+      <JalekoView 
+        onBack={() => setSelectedPlatform(null)} 
+        onLessonSelect={handleLessonSelect} 
+        watchedVideos={watchedVideos}
+      />
+    );
+  }
+
+  if (selectedPlatform === 'mesalva') {
+    return (
+      <MeSalvaView 
+        onBack={() => setSelectedPlatform(null)} 
+        onLessonSelect={handleLessonSelect} 
+        watchedVideos={watchedVideos}
+      />
+    );
+  }
+
   if (selectedPlatform) {
     const platform = PREMIUM_PLATFORMS.find(p => p.id === selectedPlatform);
     
@@ -865,7 +924,14 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
 
           <div className="hidden md:flex items-center gap-6">
             <button onClick={() => { setSearchTerm(''); setSelectedPlatform(null); }} className="text-xs font-black uppercase tracking-widest text-white/60 hover:text-white transition-colors">Início</button>
-            <button onClick={() => setSelectedPlatform('medcurso')} className="text-xs font-black uppercase tracking-widest text-white/60 hover:text-white transition-colors">Cursos</button>
+            <button onClick={() => {
+              setSelectedPlatform(null);
+              setSelectedCourse(null);
+              setSearchTerm('');
+              setTimeout(() => {
+                document.getElementById('platforms-section')?.scrollIntoView({ behavior: 'smooth' });
+              }, 100);
+            }} className="text-xs font-black uppercase tracking-widest text-white/60 hover:text-white transition-colors">Cursos</button>
             <button className="text-xs font-black uppercase tracking-widest text-white/60 hover:text-white transition-colors">Materiais</button>
           </div>
         </div>
@@ -955,8 +1021,16 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
                         setSelectedPlatform(result.platform === 'Medcurso' ? 'medcurso' : 'sanarflix');
                         setSelectedCourse(result.data);
                       }
+                      if (result.type === 'folder') {
+                        setSelectedPlatform(result.data.id === 'jaleko' ? 'jaleko' : 'mesalva');
+                      }
                       if (result.type === 'lesson') {
-                        handleLessonSelect(result.data, result.platform);
+                        const platId = result.platform?.toLowerCase().includes('vest') ? 'devoltavest' : 
+                                     (result.platform?.toLowerCase().includes('medcurso') ? 'medcurso' : 
+                                     (result.platform?.toLowerCase().includes('anatomy') ? 'anatomyflix' : 
+                                     (result.platform?.toLowerCase().includes('salva') ? 'mesalva' : 'medcurso')));
+                        setSelectedPlatform(platId);
+                        handleLessonSelect(result.data, result.course);
                       }
                       setSearchTerm('');
                     }}
@@ -971,17 +1045,22 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-4xl opacity-20">
-                           {result.type === 'platform' ? '📺' : '📚'}
+                           {result.type === 'platform' ? '📺' : result.type === 'folder' ? '📂' : '📚'}
                         </div>
                       )}
                       <div className="absolute top-4 left-4">
-                         <span className="px-3 py-1 bg-black/60 backdrop-blur-md rounded-md text-[8px] font-black text-white uppercase tracking-widest border border-white/10">
+                         <span className={`px-3 py-1 bg-black/60 backdrop-blur-md rounded-md text-[8px] font-black text-white uppercase tracking-widest border border-white/10 ${
+                           result.type === 'folder' ? 'text-amber-500' : ''
+                         }`}>
                             {result.type}
                          </span>
                       </div>
                     </div>
                     <div className="p-6">
-                       <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1 truncate">{result.platform || 'NEXUS'}</p>
+                       <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1 truncate">
+                         {result.platform || 'NEXUS'}
+                         {result.course && <span className="text-white/40"> • {result.course}</span>}
+                       </p>
                        <h4 className="text-sm font-black text-white leading-tight group-hover:text-blue-400 transition-colors line-clamp-2">{result.title}</h4>
                     </div>
                   </motion.div>
@@ -1028,7 +1107,7 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-4xl md:text-8xl font-black italic tracking-tighter"
+            className="text-3xl md:text-6xl font-black italic tracking-tighter"
           >
             {featuredContent.lesson.title}
           </motion.h1>
@@ -1037,7 +1116,7 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-[#9CA3AF] text-lg md:text-2xl font-medium max-w-3xl leading-relaxed"
+            className="text-[#9CA3AF] text-base md:text-xl font-medium max-w-2xl leading-relaxed"
           >
             {featuredContent.courseName} • {(featuredContent.lesson as any).block || 'Módulo Completo'} • {featuredContent.theme.desc}
           </motion.p>
@@ -1286,7 +1365,7 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
         </section>
 
         {/* Plataformas (Catalog Browsing) */}
-        <section className="pb-32">
+        <section id="platforms-section" className="pb-32">
           <h3 className="text-xl md:text-3xl font-black text-white mb-10 italic">Explorar Plataformas</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
              {PREMIUM_PLATFORMS.map((platform) => (
