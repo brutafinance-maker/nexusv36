@@ -24,6 +24,7 @@ import {
 import NexusVideoPlayer from './NexusVideoPlayer';
 import JalekoView from './JalekoView';
 import MeSalvaView from './MeSalvaView';
+import SanarExtensivoView from './SanarExtensivoView';
 
 interface PremiumViewProps {
   userStats: UserStats;
@@ -271,6 +272,7 @@ const PREMIUM_PLATFORMS = [
   { id: 'anatomyflix', title: 'Anatomyflix', category: 'anatomy', description: 'O streaming da Anatomia Humana.', image: 'https://anatomyflix.anatomiafacil.com.br/wp-content/uploads/2024/03/Logo-Anatomyflix.png' },
   { id: 'jaleko', title: 'Jaleko Artmed', category: 'official', description: 'Cursos médicos de alto padrão.', image: 'https://images.unsplash.com/photo-1576091160399-112521d4183a?auto=format&fit=crop&q=80&w=800' },
   { id: 'mesalva', title: 'Me Salva!', category: 'prep', description: 'A maior plataforma de educação online.', image: 'https://raw.githubusercontent.com/samielabud-ui/nexus-capas/main/MjAyMi0xMC0xMyAxOTo0NzoxNCArMDAwMDg2MDk1OA%3D%3D_0A.png' },
+  { id: 'sanar-extensivo', title: 'Sanar Extensivo', category: 'official', description: 'O curso preparatório mais completo do Brasil.', image: 'https://raw.githubusercontent.com/samielabud-ui/nexus-capas/main/banner-sanar2.webp' },
 ];
 
 const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onAwardPoints, onIncrementUsage, onNavigate }) => {
@@ -287,47 +289,22 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
 
   // Determine Featured Content (Dynamic Hero)
   const featuredContent = useMemo(() => {
-    const allCourses = [
-      { name: 'Hematologia', lessons: HEMATOLOGIA_LESSONS },
-      { name: 'Pediatria', lessons: [...PEDIATRIA_1_LESSONS, ...PEDIATRIA_2_LESSONS, ...PEDIATRIA_3_LESSONS] },
-      { name: 'Embriologia', lessons: EMBRIOLOGIA_LESSONS },
-      { name: 'Reprodução Humana', lessons: REPRODUCAO_HUMANA_LESSONS },
-      { name: 'Articulações', lessons: ANATOMYFLIX_LESSONS }
-    ];
-
-    // Count watched lessons per course
-    const courseStats = allCourses.map(course => ({
-      ...course,
-      watchedCount: course.lessons.filter(l => watchedVideos.includes(l.id)).length
-    }));
-
-    // Find course with most watched lessons
-    const topCourse = courseStats.reduce((prev, current) => 
-      (current.watchedCount > prev.watchedCount) ? current : prev
-    , courseStats[0]);
-
-    // If no lessons watched, use default (Hematologia) or lastWatched if available
-    let finalCourse = topCourse;
-    if (topCourse.watchedCount === 0 && userStats.lastWatched?.courseName) {
-      const lastCourse = allCourses.find(c => c.name === userStats.lastWatched?.courseName);
-      if (lastCourse) finalCourse = { ...lastCourse, watchedCount: 1 };
-    }
-
-    const theme = SPECIALTY_THEMES[finalCourse.name];
-    const finalTheme = theme || SPECIALTY_THEMES["Clínica Médica"];
-    
-    // Find first unwatched lesson of the top course
-    const nextLesson = finalCourse.lessons.find(l => !watchedVideos.includes(l.id)) || finalCourse.lessons[0];
-
+    // Force Sanar Extensivo as the primary featured banner
     return {
-      courseName: finalCourse.name,
-      lesson: nextLesson,
-      theme: finalTheme,
-      hasTheme: !!theme,
-      thumbnail: `https://img.youtube.com/vi/${nextLesson.id}/maxresdefault.jpg`,
-      platformId: finalCourse.name === 'Embriologia' || finalCourse.name === 'Reprodução Humana' ? 'devoltavest' : (finalCourse.name === 'Articulações' ? 'anatomyflix' : 'medcurso')
+      courseName: 'Sanar Extensivo',
+      lesson: { id: 'sanar-main', title: 'Preparação Completa Residência Médica' },
+      theme: {
+        img: "https://raw.githubusercontent.com/samielabud-ui/nexus-capas/main/banner-sanar2.webp",
+        icon: "🏥",
+        accent: "#3B82F6",
+        desc: "O curso preparatório mais completo do Brasil para Residência Médica 2024.",
+        gradient: "from-blue-600 to-indigo-500"
+      },
+      hasTheme: true,
+      thumbnail: "https://raw.githubusercontent.com/samielabud-ui/nexus-capas/main/banner-sanar2.webp",
+      platformId: 'sanar-extensivo'
     };
-  }, [watchedVideos, userStats.lastWatched]);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -366,15 +343,29 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
       { id: 'articulacoes', title: 'Articulações', platform: 'Me Salva!', course: 'Anatomia' }
     ];
 
-    JALEKO_SEARCHABLE_FOLDERS.forEach(f => {
+    const SANAR_EXTENSIVO_SEARCHABLE_FOLDERS = [
+      { id: 'cirurgia', title: 'Cirurgia', platform: 'Sanar Extensivo' },
+      { id: 'clinica-medica', title: 'Clínica Médica', platform: 'Sanar Extensivo' },
+      { id: 'go', title: 'Ginecologia e Obstetrícia', platform: 'Sanar Extensivo' },
+      { id: 'pediatria', title: 'Pediatria', platform: 'Sanar Extensivo' },
+      { id: 'preventiva', title: 'Preventiva', platform: 'Sanar Extensivo' }
+    ];
+
+    JALEKO_SEARCHABLE_FOLDERS.forEach((f: any) => {
       if (f.title.toLowerCase().includes(term)) {
         results.push({ type: 'folder', title: f.title, platform: f.platform, course: f.course, data: { ...f, id: 'jaleko' } });
       }
     });
 
-    MESALVA_SEARCHABLE_FOLDERS.forEach(f => {
+    MESALVA_SEARCHABLE_FOLDERS.forEach((f: any) => {
       if (f.title.toLowerCase().includes(term)) {
         results.push({ type: 'folder', title: f.title, platform: f.platform, course: f.course, data: { ...f, id: 'mesalva' } });
+      }
+    });
+
+    SANAR_EXTENSIVO_SEARCHABLE_FOLDERS.forEach((f: any) => {
+      if (f.title.toLowerCase().includes(term)) {
+        results.push({ type: 'folder', title: f.title, platform: f.platform, course: f.course, data: { ...f, id: 'sanar-extensivo' } });
       }
     });
 
@@ -709,6 +700,16 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
     );
   }
 
+  if (selectedPlatform === 'sanar-extensivo') {
+    return (
+      <SanarExtensivoView 
+        onBack={() => setSelectedPlatform(null)} 
+        onLessonSelect={handleLessonSelect} 
+        watchedVideos={watchedVideos}
+      />
+    );
+  }
+
   if (selectedPlatform) {
     const platform = PREMIUM_PLATFORMS.find(p => p.id === selectedPlatform);
     
@@ -1022,13 +1023,17 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
                         setSelectedCourse(result.data);
                       }
                       if (result.type === 'folder') {
-                        setSelectedPlatform(result.data.id === 'jaleko' ? 'jaleko' : 'mesalva');
+                        setSelectedPlatform(
+                          result.data.id === 'jaleko' ? 'jaleko' : 
+                          result.data.id === 'sanar-extensivo' ? 'sanar-extensivo' : 'mesalva'
+                        );
                       }
                       if (result.type === 'lesson') {
                         const platId = result.platform?.toLowerCase().includes('vest') ? 'devoltavest' : 
                                      (result.platform?.toLowerCase().includes('medcurso') ? 'medcurso' : 
                                      (result.platform?.toLowerCase().includes('anatomy') ? 'anatomyflix' : 
-                                     (result.platform?.toLowerCase().includes('salva') ? 'mesalva' : 'medcurso')));
+                                     (result.platform?.toLowerCase().includes('salva') ? 'mesalva' : 
+                                     (result.platform?.toLowerCase().includes('sanar') ? 'sanar-extensivo' : 'medcurso'))));
                         setSelectedPlatform(platId);
                         handleLessonSelect(result.data, result.course);
                       }
@@ -1130,17 +1135,21 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
             <button 
               onClick={() => {
                 setSelectedPlatform(featuredContent.platformId);
-                setSelectedCourse(featuredContent.courseName);
-                handleLessonSelect(featuredContent.lesson, featuredContent.courseName);
+                if (featuredContent.platformId !== 'sanar-extensivo') {
+                  setSelectedCourse(featuredContent.courseName);
+                  handleLessonSelect(featuredContent.lesson, featuredContent.courseName);
+                }
               }}
               className="bg-[#3B82F6] hover:bg-[#2563EB] text-white px-10 md:px-14 py-4 md:py-5 rounded-2xl font-black text-xs md:text-sm uppercase tracking-widest flex items-center gap-4 transition-all shadow-2xl hover:scale-105 active:scale-95"
             >
-              <Play size={20} fill="currentColor" className="ml-1" /> {watchedVideos.includes(featuredContent.lesson.id) ? 'Reassistir Aula' : 'Assistir Agora'}
+              <Play size={20} fill="currentColor" className="ml-1" /> {'Assistir Agora'}
             </button>
             <button 
               onClick={() => {
                 setSelectedPlatform(featuredContent.platformId);
-                setSelectedCourse(featuredContent.courseName);
+                if (featuredContent.platformId !== 'sanar-extensivo') {
+                  setSelectedCourse(featuredContent.courseName);
+                }
               }}
               className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-10 py-4 md:py-5 rounded-2xl font-black text-xs md:text-sm uppercase tracking-widest flex items-center gap-4 transition-all border border-white/10"
             >
