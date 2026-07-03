@@ -187,7 +187,7 @@ const StudyView: React.FC<StudyViewProps> = ({ userStats, onStart, onStop, allUs
                  {currentlyStudying.map(u => (
                     <div key={u.uid} className="flex items-center justify-between p-4 rounded-2xl bg-neutral-50 dark:bg-nexus-surface border border-neutral-200 dark:border-nexus-border">
                        <div className="flex items-center gap-3">
-                          <img src={u.photoURL} className="w-10 h-10 rounded-xl" alt="" />
+                          <img src={u.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.displayName || 'User'}`} className="w-10 h-10 rounded-xl" alt="" />
                           <div>
                             <p className="text-xs font-bold text-neutral-900 dark:text-white">{u.displayName}</p>
                             <p className="text-[10px] font-mono text-neutral-500 dark:text-nexus-text-sec">{formatTime(u.elapsed)}</p>
@@ -213,7 +213,7 @@ const StudyView: React.FC<StudyViewProps> = ({ userStats, onStart, onStop, allUs
                     <div key={u.uid} className="flex items-center justify-between">
                        <div className="flex items-center gap-3">
                           <span className="text-[10px] font-black text-neutral-400 dark:text-nexus-text-label">#{i+1}</span>
-                          <img src={u.photoURL} className="w-8 h-8 rounded-lg" alt="" />
+                          <img src={u.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.displayName || 'User'}`} className="w-8 h-8 rounded-lg" alt="" />
                           <span className="text-xs font-bold text-neutral-700 dark:text-nexus-text-main">{u.displayName}</span>
                        </div>
                        <p className="text-[10px] font-mono font-black text-neutral-900 dark:text-white">{formatTime(u.dailyStudyTime)}</p>

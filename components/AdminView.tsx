@@ -347,7 +347,7 @@ const AdminView: React.FC<AdminViewProps> = ({ userStats }) => {
                   {filteredUsers.map(u => (
                     <tr key={u.uid} className="border-b border-neutral-800/50 hover:bg-white/5 transition-colors">
                       <td className="p-6 flex items-center gap-3">
-                        <img src={u.photoURL} className="w-8 h-8 rounded-lg" alt="" />
+                        <img src={u.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.displayName || 'User'}`} className="w-8 h-8 rounded-lg" alt="" />
                         <div>
                           <p className="text-sm font-bold text-white">{u.displayName}</p>
                           <p className="text-[10px] text-neutral-500">{u.email || 'sem-email@nexus.com'}</p>
@@ -429,7 +429,7 @@ const AdminView: React.FC<AdminViewProps> = ({ userStats }) => {
               <div className="bg-neutral-900 border border-neutral-800 rounded-[2.5rem] p-8 space-y-8 h-[600px] overflow-y-auto no-scrollbar">
                  {chatMessages.length > 0 ? chatMessages.map(msg => (
                    <div key={msg.id} className="flex gap-4 group">
-                      <img src={msg.senderPhoto} className="w-10 h-10 rounded-xl border border-neutral-800 object-cover" alt="" />
+                      <img src={msg.senderPhoto || `https://api.dicebear.com/7.x/avataaars/svg?seed=${msg.senderName || 'Anonymous'}`} className="w-10 h-10 rounded-xl border border-neutral-800 object-cover" alt="" />
                       <div className="flex-grow">
                          <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">

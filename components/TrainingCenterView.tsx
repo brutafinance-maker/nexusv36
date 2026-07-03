@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import Module7Training from './training/Module7Training';
+import Module8Training from './training/Module8Training';
 
 interface TrainingCenterViewProps {
   onAnswer?: (isCorrect: boolean) => void;
@@ -37,6 +38,14 @@ const TrainingCenterView: React.FC<TrainingCenterViewProps> = ({ onAnswer }) => 
     return (
       <div className="animate-in fade-in duration-500">
         <Module7Training onBack={() => setActiveModule(null)} hideHeader={false} onAnswer={onAnswer} />
+      </div>
+    );
+  }
+
+  if (activeModule === 'm8') {
+    return (
+      <div className="animate-in fade-in duration-500">
+        <Module8Training onBack={() => setActiveModule(null)} onAnswer={onAnswer} />
       </div>
     );
   }
@@ -87,7 +96,7 @@ const TrainingCenterView: React.FC<TrainingCenterViewProps> = ({ onAnswer }) => 
         ))}
       </div>
 
-      {activeModule && activeModule !== 'm7' && (
+      {activeModule && activeModule !== 'm7' && activeModule !== 'm8' && (
         <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-nexus-card border border-neutral-200 dark:border-nexus-border rounded-3xl p-10 max-w-md w-full text-center animate-in zoom-in duration-300">
             <div className="w-16 h-16 bg-nexus-blue/10 text-nexus-blue rounded-full flex items-center justify-center mx-auto mb-6 text-2xl">🚧</div>

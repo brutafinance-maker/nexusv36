@@ -48,6 +48,10 @@ const App: React.FC = () => {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [view]);
+
   const navigateTo = (newView: typeof view) => {
     if (newView !== view) {
       window.history.pushState({ view: newView }, '', '');

@@ -110,7 +110,7 @@ const Header: React.FC<HeaderProps> = ({ currentView, onNavigate, userStats, onO
 
           <button onClick={onOpenProfile} className="flex items-center gap-2 group p-1 rounded-lg hover:bg-med-bg dark:hover:bg-nexus-surface transition-colors">
             <div className="w-7 h-7 rounded-md overflow-hidden border border-med-border dark:border-nexus-border group-hover:border-med-primary dark:group-hover:border-nexus-blue transition-colors bg-white">
-               <img src={userStats.photoURL} alt="P" className="w-full h-full object-cover" />
+               <img src={userStats.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userStats.displayName || 'User'}`} alt="P" className="w-full h-full object-cover" />
             </div>
             <span className="hidden md:block text-[11px] font-semibold tracking-wide text-med-sec dark:text-nexus-text-main group-hover:text-med-text dark:group-hover:text-nexus-text-title transition-colors">
               {userStats.displayName.split(' ')[0]}

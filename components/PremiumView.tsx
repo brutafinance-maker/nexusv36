@@ -25,6 +25,7 @@ import NexusVideoPlayer from './NexusVideoPlayer';
 import JalekoView from './JalekoView';
 import MeSalvaView from './MeSalvaView';
 import SanarExtensivoView from './SanarExtensivoView';
+import FisiologiaDidaticaView from './FisiologiaDidaticaView';
 
 interface PremiumViewProps {
   userStats: UserStats;
@@ -264,8 +265,45 @@ const MEDCOF_COURSES = [ "Extensivo", "Curso de Ultrassom – POCUS", "Desafios 
 const MEDCURSO_COURSES = [ "Pediatria", "Ginecologia e Obstetrícia", "Cirurgia", "Clínica Médica", "Hematologia", "Preventiva" ];
 const ANATOMYFLIX_COURSES = [ "Articulações" ];
 
+const FISIOLOGIA_DIDATICA_LESSONS = [
+  { id: 'll8kvFAms40', title: 'Visão Geral (Anatomia)' },
+  { id: 'dT83878tsF8', title: 'Estruturas do Sistema Nervoso' },
+  { id: 'JZ5vSfgWWsw', title: 'Introdução (Células)' },
+  { id: 'A71H3FgrxTE', title: 'Visão Geral (Células)' },
+  { id: 'znoZOZrrywk', title: 'Células Gliais' },
+  { id: 'VfrImAU8imI', title: 'Neurônios' },
+  { id: 'mNuUqloq3Pw', title: 'Introdução (Sinapses)' },
+  { id: 'S8n-RJ_AVIs', title: 'Visão Geral (Sinapses)' },
+  { id: 'Npg8boyCvbo', title: 'Funcionamento Sináptico' },
+  { id: 'bHAvWAUwj-8', title: 'Tipos de Sinapses' },
+  { id: '1F6j9TyczEs', title: 'Introdução (Circulação Encefálica)' },
+  { id: '1ZWVnl_SRlw', title: 'Visão Geral (Circulação Encefálica)' },
+  { id: 'jzECkSs8GZ0', title: 'Artérias Encefálicas' },
+  { id: '-p4QoG7U2JU', title: 'Introdução (Líquor)' },
+  { id: '2jGoacZivHg', title: 'Visão Geral (Líquor)' },
+  { id: 'YhSKafOylvs', title: 'Produção do Líquor' },
+  { id: 'QHqrCqKiogc', title: 'Funções do Líquor' },
+  { id: 'y49wZHdvs7o', title: 'Circulação do Líquor' },
+  { id: 'VSTZnxTTasw', title: 'Introdução (Tato)' },
+  { id: 'Hhq1cuYtGUs', title: 'Visão Geral (Tato)' },
+  { id: '8xZk5TA0CrE', title: 'Estrutura Central (Tato)' },
+  { id: '23dQJdjUupQ', title: 'Estrutura Periférica (Tato)' },
+  { id: 'LOzJyKFSCR8', title: 'Introdução (Dor)' },
+  { id: 'q0pYOqBGBX8', title: 'Visão Geral (Dor)' },
+  { id: 'RUPy2H1E1ug', title: 'Classificação da Dor' },
+  { id: 'yDNqX2snoOU', title: 'Via da Dor' },
+  { id: '5iuBss_Sqag', title: 'Introdução (Visão)' },
+  { id: 'S-aKxbkpjKw', title: 'Visão Geral (Visão)' },
+  { id: 'A_IemOK86jw', title: 'Estrutura do Olho' },
+  { id: 'pXpKvFK5jnQ', title: 'Fisiologia da Visão' },
+  { id: 'sUJLbJmR3lM', title: 'Introdução (Audição)' },
+  { id: 'NhJ5_UE01fo', title: 'Visão Geral (Audição)' },
+  { id: 'vfkTY1oKRg4', title: 'Estrutura da Orelha' }
+];
+
 const PREMIUM_PLATFORMS = [
   { id: 'sanarflix', title: 'Sanarflix', category: 'official', description: 'Plataforma oficial Sanarflix.', image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=600' },
+  { id: 'fisiologia-didatica', title: 'Fisiologia Didática', category: 'Área Premium', description: 'Curso completo de Fisiologia Humana por Sistemas.', image: 'https://raw.githubusercontent.com/samielabud-ui/nexus-capas/main/IMG-Destacada.png' },
   { id: 'medcurso', title: 'Medcurso', category: 'official', description: 'Preparatório para Residência Médica.', image: 'https://medgrupo.com.br/wp-content/uploads/2024/03/medgrupo.png' },
   { id: 'medcof', title: 'MedCof', category: 'official', description: 'Elite em aprovação na residência médica.', image: 'https://www.grupomedcof.com.br/blog/wp-content/uploads/2024/10/Modelo-instituicoes-16.png' },
   { id: 'devoltavest', title: 'De Volta ao Vest', category: 'foundation', description: 'Fundamentos do vestibular.', image: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&q=80&w=600' },
@@ -305,6 +343,11 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
       platformId: 'sanar-extensivo'
     };
   }, []);
+
+  useEffect(() => {
+    // Auto-scroll to top when mounting or changing platform / course / active video
+    window.scrollTo(0, 0);
+  }, [selectedPlatform, selectedCourse, activeVideo]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -376,7 +419,8 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
       ...PEDIATRIA_2_LESSONS.map(l => ({ ...l, origin: 'Pediatria 2', platform: 'Medcurso' })),
       ...PEDIATRIA_3_LESSONS.map(l => ({ ...l, origin: 'Pediatria 3', platform: 'Medcurso' })),
       ...HEMATOLOGIA_LESSONS.map(l => ({ ...l, origin: 'Hematologia', platform: 'Medcurso' })),
-      ...ANATOMYFLIX_LESSONS.map(l => ({ ...l, origin: 'Articulações', platform: 'Anatomyflix' }))
+      ...ANATOMYFLIX_LESSONS.map(l => ({ ...l, origin: 'Articulações', platform: 'Anatomyflix' })),
+      ...FISIOLOGIA_DIDATICA_LESSONS.map(l => ({ ...l, origin: 'Neurofisiologia', platform: 'Fisiologia Didática' }))
     ];
 
     allLessons.forEach(l => {
@@ -680,6 +724,17 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
   }
 
   // --- VISTA PRINCIPAL (STREAMING STYLE) ---
+  if (selectedPlatform === 'fisiologia-didatica') {
+    return (
+      <FisiologiaDidaticaView 
+        onBack={() => setSelectedPlatform(null)} 
+        onLessonSelect={handleLessonSelect} 
+        watchedVideos={watchedVideos}
+        onAwardPoints={onAwardPoints}
+      />
+    );
+  }
+
   if (selectedPlatform === 'jaleko') {
     return (
       <JalekoView 
