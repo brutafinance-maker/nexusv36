@@ -26,6 +26,7 @@ import JalekoView from './JalekoView';
 import MeSalvaView from './MeSalvaView';
 import SanarExtensivoView from './SanarExtensivoView';
 import FisiologiaDidaticaView from './FisiologiaDidaticaView';
+import SistemaNervosoView from './SistemaNervosoView';
 
 interface PremiumViewProps {
   userStats: UserStats;
@@ -250,13 +251,14 @@ const PEDIATRIA_3_LESSONS: (VideoLesson & { duration: string; block: string; isB
 ];
 
 const SANARFLIX_COURSES = [
+  "Sistema Nervoso",
   "Anatomia do Sistema Locomotor", "Anatomia dos Órgãos e Sistemas", "Antibioticoterapia",
   "Atendimento Pré-Hospitalar", "Biofísica", "Biologia Molecular e Celular",
   "Bioquímica", "Eletrocardiograma (ECG)", "Embriologia", "Exames Laboratoriais",
   "Farmacologia", "Fisiologia", "Genética", "Histologia", "Microbiologia",
   "Neuroanatomia", "Parasitologia", "Patologia", "Primeiros Socorros",
   "Radiologia", "Semiologia", "Sistema Circulatório", "Sistema Digestório",
-  "Sistema Endócrino", "Sistema Hematopoiético", "Sistema Imune", "Sistema Nervoso",
+  "Sistema Endócrino", "Sistema Hematopoiético", "Sistema Imune",
   "Sistema Reprodutor", "Sistema Respiratório", "Sistema Urinário e Renal", "Trauma"
 ];
 
@@ -299,6 +301,37 @@ const FISIOLOGIA_DIDATICA_LESSONS = [
   { id: 'sUJLbJmR3lM', title: 'Introdução (Audição)' },
   { id: 'NhJ5_UE01fo', title: 'Visão Geral (Audição)' },
   { id: 'vfkTY1oKRg4', title: 'Estrutura da Orelha' }
+];
+
+const SISTEMA_NERVOSO_LESSONS = [
+  { id: 'xRlREtoq8GQ', title: 'Tecido Nervoso – O Sistema Nervoso' },
+  { id: 'eXa28cAJh_Q', title: 'Tecido Nervoso – Componentes' },
+  { id: 'Lumg4V4Gx0o', title: 'Neurônios' },
+  { id: 'FgQBGY9RAks', title: 'Células da Neuróglia' },
+  { id: 'Yc4w7ZSAXsM', title: 'Anatomia Macroscópica' },
+  { id: '-K9i2o5em68', title: 'Anatomia Macroscópica do Encéfalo' },
+  { id: 'Q_A1Q6FacFU', title: 'Meninges, Plexo Coroide e Líquor' },
+  { id: '0RfdN1NT9JM', title: 'Medula Espinal' },
+  { id: '-MLiWHMXFos', title: 'Tronco Encefálico' },
+  { id: '9qYHfgb63lE', title: 'Anatomia do Cerebelo' },
+  { id: 'UrTU1AjfFYQ', title: 'Cerebelo e Equilíbrio' },
+  { id: '5lxFEk8r2CM', title: 'Cérebro' },
+  { id: '8Ie4-7usW54', title: 'Funções Superiores do Sistema Nervoso Central' },
+  { id: 'L_sjxO4MuwA', title: 'Vascularização do Encéfalo' },
+  { id: 'IQm8kF7qdBk', title: 'Sistema Nervoso Periférico' },
+  { id: '5WCHaWV7F1c', title: 'Nervos Cranianos – 1º ao 6º Par' },
+  { id: 'a7IxvPvzjhQ', title: 'Nervos Cranianos – 9º ao 12º Par' },
+  { id: 'QWK6aGH09dE', title: 'Sistema Somatossensorial' },
+  { id: 'vK9WXTXpjPQ', title: 'Sistema Nervoso Autônomo e seu Controle Central' },
+  { id: 'kiAaixJoW9Q', title: 'Sistema Fotorreceptor – Retina e Estruturas Acessórias' },
+  { id: '-Tn2dbfRdgI', title: 'Sistema Fotorreceptor – Camada Externa, Média e Lentes' },
+  { id: 'ARoV_hgU2Jg', title: 'Sistema Fotorreceptor e Visão' },
+  { id: 'f1xLnBqNTXg', title: 'Sentidos Especiais – Visão' },
+  { id: 'Ef3jv93ED44', title: 'Sistema Audiorreceptor' },
+  { id: 'DmqOkFZqFhw', title: 'Sentidos Especiais – Audição' },
+  { id: 'P74ZH3LiE-M', title: 'Sentidos Especiais – Vestibular' },
+  { id: '9qii8vKv5S8', title: 'Olfato' },
+  { id: 'N2nzlwslNhE', title: 'Sentidos Especiais – Gustação e Olfação' }
 ];
 
 const PREMIUM_PLATFORMS = [
@@ -420,7 +453,8 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
       ...PEDIATRIA_3_LESSONS.map(l => ({ ...l, origin: 'Pediatria 3', platform: 'Medcurso' })),
       ...HEMATOLOGIA_LESSONS.map(l => ({ ...l, origin: 'Hematologia', platform: 'Medcurso' })),
       ...ANATOMYFLIX_LESSONS.map(l => ({ ...l, origin: 'Articulações', platform: 'Anatomyflix' })),
-      ...FISIOLOGIA_DIDATICA_LESSONS.map(l => ({ ...l, origin: 'Neurofisiologia', platform: 'Fisiologia Didática' }))
+      ...FISIOLOGIA_DIDATICA_LESSONS.map(l => ({ ...l, origin: 'Neurofisiologia', platform: 'Fisiologia Didática' })),
+      ...SISTEMA_NERVOSO_LESSONS.map(l => ({ ...l, origin: 'Sistema Nervoso', platform: 'Sanarflix' }))
     ];
 
     allLessons.forEach(l => {
@@ -499,6 +533,7 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
     }
     if (course === 'Hematologia') return HEMATOLOGIA_LESSONS;
     if (course === 'Articulações') return ANATOMYFLIX_LESSONS;
+    if (course === 'Sistema Nervoso') return SISTEMA_NERVOSO_LESSONS;
     return [{ id: 'dQw4w9WgXcQ', title: `Aula 01: Introdução a ${course}`, duration: '15:00' }];
   };
 
@@ -724,6 +759,17 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
   }
 
   // --- VISTA PRINCIPAL (STREAMING STYLE) ---
+  if (selectedPlatform === 'sanarflix' && selectedCourse === 'Sistema Nervoso' && !activeVideo) {
+    return (
+      <SistemaNervosoView 
+        onBack={() => setSelectedCourse(null)} 
+        onLessonSelect={handleLessonSelect} 
+        watchedVideos={watchedVideos}
+        onAwardPoints={onAwardPoints}
+      />
+    );
+  }
+
   if (selectedPlatform === 'fisiologia-didatica') {
     return (
       <FisiologiaDidaticaView 
@@ -812,6 +858,10 @@ const PremiumView: React.FC<PremiumViewProps> = ({ userStats, onAddActivity, onA
                     setSelectedCourse(course);
                     if (course === 'Pediatria') {
                       // Don't auto-select video, let him choose sub-course
+                      return;
+                    }
+                    if (course === 'Sistema Nervoso' && selectedPlatform === 'sanarflix') {
+                      // Don't auto-select video, open custom module view
                       return;
                     }
                     const lessons = getLessonsForCourse(course);
